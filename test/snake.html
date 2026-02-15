@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #e0e0e0;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2rem;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        #score-board {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        #score-board span {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        canvas {
+            border: 2px solid #00ff88;
+            border-radius: 4px;
+            background: #0f0f23;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+        }
+
+        #message {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            height: 1.5em;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake</h1>
+    <div id="score-board">
+        Score: <span id="score">0</span> |
+        Best: <span id="best">0</span>
+    </div>
+    <canvas id="game" width="400" height="400"></canvas>
+    <div id="message">Stiskni libovolnou kl&aacute;vesu pro start</div>
+
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const bestEl = document.getElementById('best');
+        const messageEl = document.getElementById('message');
+
+        const GRID = 20;
+        const TILE = canvas.width / GRID;
+
+        let snake, direction, nextDirection, food, score, bestScore, speed, gameLoop, running;
+
+        bestScore = 0;
+
+        function init() {
+            snake = [
+                { x: 10, y: 10 },
+                { x: 9, y: 10 },
+                { x: 8, y: 10 }
+            ];
+            direction = { x: 1, y: 0 };
+            nextDirection = { x: 1, y: 0 };
+            score = 0;
+            speed = 120;
+            scoreEl.textContent = score;
+            placeFood();
+        }
+
+        function placeFood() {
+            do {
+                food = {
+                    x: Math.floor(Math.random() * GRID),
+                    y: Math.floor(Math.random() * GRID)
+                };
+            } while (snake.some(s => s.x === food.x && s.y === food.y));
+        }
+
+        function update() {
+            direction = { ...nextDirection };
+
+            const head = {
+                x: snake[0].x + direction.x,
+                y: snake[0].y + direction.y
+            };
+
+            // Wall collision
+            if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID) {
+                gameOver();
+                return;
+            }
+
+            // Self collision
+            if (snake.some(s => s.x === head.x && s.y === head.y)) {
+                gameOver();
+                return;
+            }
+
+            snake.unshift(head);
+
+            // Eat food
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreEl.textContent = score;
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestEl.textContent = bestScore;
+                }
+                placeFood();
+                // Speed up slightly
+                if (speed > 60) {
+                    speed -= 2;
+                    clearInterval(gameLoop);
+                    gameLoop = setInterval(tick, speed);
+                }
+            } else {
+                snake.pop();
+            }
+        }
+
+        function draw() {
+            // Clear
+            ctx.fillStyle = '#0f0f23';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid lines (subtle)
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            for (let i = 0; i < GRID; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * TILE, 0);
+                ctx.lineTo(i * TILE, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * TILE);
+                ctx.lineTo(canvas.width, i * TILE);
+                ctx.stroke();
+            }
+
+            // Snake
+            snake.forEach((seg, i) => {
+                const brightness = Math.max(0.4, 1 - i * 0.03);
+                ctx.fillStyle = `rgba(0, 255, 136, ${brightness})`;
+                ctx.shadowColor = i === 0 ? 'rgba(0, 255, 136, 0.6)' : 'transparent';
+                ctx.shadowBlur = i === 0 ? 8 : 0;
+                ctx.beginPath();
+                ctx.roundRect(
+                    seg.x * TILE + 1,
+                    seg.y * TILE + 1,
+                    TILE - 2,
+                    TILE - 2,
+                    4
+                );
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Food
+            ctx.fillStyle = '#ff4757';
+            ctx.shadowColor = 'rgba(255, 71, 87, 0.6)';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(
+                food.x * TILE + TILE / 2,
+                food.y * TILE + TILE / 2,
+                TILE / 2 - 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        function tick() {
+            update();
+            draw();
+        }
+
+        function startGame() {
+            if (running) return;
+            running = true;
+            init();
+            messageEl.textContent = '';
+            gameLoop = setInterval(tick, speed);
+        }
+
+        function gameOver() {
+            running = false;
+            clearInterval(gameLoop);
+            messageEl.textContent = `Game Over! Score: ${score} | Stiskni kl\u00e1vesu pro restart`;
+
+            // Flash effect
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            if (!running) {
+                startGame();
+                return;
+            }
+
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    if (direction.y === 0) nextDirection = { x: 0, y: -1 };
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    if (direction.y === 0) nextDirection = { x: 0, y: 1 };
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    if (direction.x === 0) nextDirection = { x: -1, y: 0 };
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    if (direction.x === 0) nextDirection = { x: 1, y: 0 };
+                    break;
+            }
+
+            e.preventDefault();
+        });
+
+        // Initial draw
+        init();
+        draw();
+    </script>
+</body>
+</html>
