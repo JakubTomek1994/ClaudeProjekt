@@ -1,0 +1,99 @@
+# Nový web: TOMEK výroba s.r.o.
+
+## Kontext
+Firma tomek-vyroba.cz má zastaralý WordPress web. Cílem je vytvořit nový, moderní vizuál jako statický HTML + Tailwind CSS web s tmavým industriálním designem a brandovými barvami.
+
+## Technologie
+- **HTML5 + Tailwind CSS v4** (via Play CDN `@tailwindcss/browser@4`)
+- Žádný framework, žádný build step
+- Minimální vanilla JS (jen hamburger menu)
+
+## Brandové barvy
+- Primární červená: `#e1142e` (+ hover `#b8101f`, light `#ff2d47`)
+- Tmavé pozadí: `#292929` (+ varianty `#3a3a3a`, `#4a4a4a`)
+- Text: `#e5e5e5` (světlý na tmavém pozadí)
+
+## Struktura souborů
+```
+ClaudeProjekt/
+├── index.html          ← NOVÝ (celý web)
+├── assets/
+│   └── images/         ← NOVÝ (prázdný, pro budoucí obrázky)
+└── test/
+    └── snake.html      ← EXISTUJÍCÍ, neměnit
+```
+
+## Sekce webu (single-page s anchor navigací)
+
+### 1. Sticky navigace
+- Logo "T" + název "TOMEK výroba s.r.o."
+- Desktop: 4 nav linky (O společnosti, Naše stroje, Dotační programy, Kontakt jako CTA tlačítko)
+- Mobile: hamburger menu s dropdown
+- `sticky top-0`, poloprůhledné pozadí s blur efektem
+
+### 2. Hero sekce
+- `min-h-[90vh]`, centrovaný obsah
+- Nadpis: "Průmyslová výroba **na míru**" (červený accent)
+- Podnadpis s popisem služeb
+- CTA tlačítko "Kontaktujte nás"
+- CSS-only industriální mřížka na pozadí + jemný červený glow
+
+### 3. O společnosti
+- Popis firmy: výroba dílců dle dokumentace, přátelský přístup, kusová i sériová výroba
+- **5 karet služeb** v responzivním gridu:
+  1. Laserové pálení
+  2. Ohýbání
+  3. CNC obrábění
+  4. Laserové svařování
+  5. Povrchové úpravy
+- Každá karta: inline SVG ikona + název + krátký popis
+- Hover efekt: červený border
+
+### 4. Naše stroje
+- Mírně odlišné pozadí pro vizuální oddělení
+- Grid karet strojů (6 placeholder karet):
+  - Laserový řezací stroj, CNC soustruh, CNC frézka, Ohraňovací lis, Laserový svařovací stroj, Pracoviště povrchových úprav
+- Každá karta: placeholder pro foto (aspect-video) + název + specifikace
+
+### 5. Dotační programy
+- Jednoduchá sekce s jedním panelem
+- Placeholder pro EU logo + popis spolufinancování
+
+### 6. Kontakt
+- Dvousloupcový layout (mobile: pod sebou)
+- **Levý sloupec:** kontaktní osoby (Hynek Tomek, Zdeněk Dlabaja), email, adresy (sídlo + provozovna), provozní doba, IČO/DIČ
+- **Pravý sloupec:** Google Maps iframe (Ruprechtov 271)
+- Telefony jako `tel:` linky, email jako `mailto:`
+
+### 7. Footer
+- 3 sloupce: info o firmě, rychlé odkazy, partnerský e-shop (Tomek-nářadí.cz)
+- Copyright 2026
+
+## JavaScript (minimální)
+- Pouze toggle hamburger menu (cca 10 řádků)
+- Smooth scroll: nativní CSS `scroll-smooth` na `<html>`
+
+## Přístupnost
+- Sémantické HTML5 (`<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`)
+- ARIA labels na navigaci a hamburger tlačítku
+- `alt` atributy na obrázcích
+- `tel:` a `mailto:` linky
+- `title` na map iframe
+- Focus indikátory pro klávesovou navigaci
+
+## Responzivita
+| Breakpoint | Změny |
+|---|---|
+| Mobile (< 640px) | Vše v jednom sloupci, hamburger menu |
+| `sm:` (640px) | Karty služeb 2 sloupce |
+| `md:` (768px) | Footer 3 sloupce, stroje 2 sloupce |
+| `lg:` (1024px) | Desktop nav, kontakt 2 sloupce, stroje 3 sloupce |
+| `xl:` (1280px) | Karty služeb 5 sloupců |
+
+## Ověření
+1. Otevřít `index.html` v prohlížeči
+2. Zkontrolovat všechny sekce na desktopu i mobilu (DevTools responsive mode)
+3. Ověřit anchor navigaci (smooth scroll ke všem sekcím)
+4. Ověřit hamburger menu na mobilním viewportu
+5. Zkontrolovat `tel:` a `mailto:` linky
+6. Ověřit klávesovou navigaci (Tab přes všechny interaktivní prvky)

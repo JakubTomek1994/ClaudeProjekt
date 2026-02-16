@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="cs" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOMEK výroba s.r.o. — Průmyslová výroba na míru</title>
+  <meta name="description" content="TOMEK výroba s.r.o. — laserové pálení, ohýbání, CNC obrábění, laserové svařování a povrchové úpravy. Kusová i sériová výroba dílců dle dokumentace.">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    :root {
+      --color-primary: #e1142e;
+      --color-primary-hover: #b8101f;
+      --color-primary-light: #ff2d47;
+      --color-bg-dark: #292929;
+      --color-bg-dark-alt: #3a3a3a;
+      --color-bg-dark-card: #4a4a4a;
+      --color-text-light: #e5e5e5;
+    }
+
+    .slide-in {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .slide-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-brand: #e1142e;
+      --color-brand-hover: #b8101f;
+      --color-brand-light: #ff2d47;
+      --color-dark: #292929;
+      --color-dark-alt: #3a3a3a;
+      --color-dark-card: #4a4a4a;
+      --color-light: #e5e5e5;
+    }
+  </style>
+</head>
+<body class="bg-dark text-light font-sans antialiased">
+
+  <!-- ========== NAVIGACE ========== -->
+  <header class="sticky top-0 z-50 bg-dark/80 backdrop-blur-md border-b border-white/10">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16" aria-label="Hlavní navigace">
+      <!-- Logo -->
+      <a href="#hero" class="flex items-center gap-3 group">
+        <img src="LOGO/logo.png" alt="TOMEK výroba s.r.o. logo" class="w-9 h-9 rounded-md">
+        <span class="text-light font-semibold text-sm sm:text-base">TOMEK výroba s.r.o.</span>
+      </a>
+
+      <!-- Desktop nav -->
+      <ul class="hidden lg:flex items-center gap-8 text-sm">
+        <li><a href="#about" class="text-light/70 hover:text-white transition-colors">O společnosti</a></li>
+        <li><a href="#machines" class="text-light/70 hover:text-white transition-colors">Naše stroje</a></li>
+        <li><a href="#grants" class="text-light/70 hover:text-white transition-colors">Dotační programy</a></li>
+        <li>
+          <a href="#contact" class="inline-block px-5 py-2 bg-brand hover:bg-brand-hover text-white text-sm font-medium rounded-md transition-colors">
+            Kontakt
+          </a>
+        </li>
+      </ul>
+
+      <!-- Hamburger -->
+      <button
+        id="menu-toggle"
+        class="lg:hidden p-2 text-light/70 hover:text-white transition-colors"
+        aria-label="Otevřít menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-white/10 bg-dark/95 backdrop-blur-md">
+      <ul class="flex flex-col px-4 py-4 gap-3 text-sm">
+        <li><a href="#about" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">O společnosti</a></li>
+        <li><a href="#machines" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">Naše stroje</a></li>
+        <li><a href="#grants" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">Dotační programy</a></li>
+        <li>
+          <a href="#contact" class="inline-block px-5 py-2 bg-brand hover:bg-brand-hover text-white text-sm font-medium rounded-md transition-colors" onclick="closeMobileMenu()">
+            Kontakt
+          </a>
+        </li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ========== HERO ========== -->
+    <section id="hero" class="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+      <!-- Background grid -->
+      <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px;"></div>
+      <!-- Red glow -->
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-15" style="background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);"></div>
+
+      <div class="relative z-10 max-w-4xl mx-auto px-4 text-center">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+          Průmyslová výroba<br>
+          <span class="text-brand">na míru</span>
+        </h1>
+        <p class="text-light/60 text-lg sm:text-xl max-w-2xl mx-auto mb-10">
+          Laserové pálení, ohýbání, CNC obrábění, svařování a povrchové úpravy. Kusová i sériová výroba dílců dle vaší dokumentace.
+        </p>
+        <a href="#contact" class="inline-block px-8 py-3.5 bg-brand hover:bg-brand-hover text-white font-semibold rounded-md transition-colors text-lg">
+          Kontaktujte nás
+        </a>
+      </div>
+    </section>
+
+    <!-- ========== O SPOLEČNOSTI ========== -->
+    <section id="about" class="py-20 lg:py-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl sm:text-4xl font-bold text-center mb-6">O společnosti</h2>
+        <p class="text-light/60 text-center max-w-3xl mx-auto mb-16 text-lg leading-relaxed">
+          Firma TOMEK výroba s.r.o. se specializuje na výrobu dílců dle výkresové dokumentace zákazníka.
+          Nabízíme přátelský přístup, rychlé dodací lhůty a flexibilní řešení jak pro kusovou, tak sériovou výrobu.
+        </p>
+
+        <!-- Karty služeb -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
+
+          <!-- Laserové pálení -->
+          <div class="group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand transition-colors">
+            <div class="w-12 h-12 mb-4 text-brand">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                <circle cx="24" cy="24" r="4"/>
+                <path d="M24 4v8M24 36v8M4 24h8M36 24h8" stroke-linecap="round"/>
+                <path d="M10 10l6 6M32 32l6 6M10 38l6-6M32 16l6-6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Laserové pálení</h3>
+            <p class="text-light/50 text-sm leading-relaxed">Přesné řezání plechů laserovým paprskem s minimálními tolerancemi a čistými hranami.</p>
+          </div>
+
+          <!-- Ohýbání -->
+          <div class="group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand transition-colors">
+            <div class="w-12 h-12 mb-4 text-brand">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                <path d="M8 36h12c4 0 6-2 6-6V18c0-4 2-6 6-6h8" stroke-linecap="round"/>
+                <path d="M36 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Ohýbání</h3>
+            <p class="text-light/50 text-sm leading-relaxed">Přesné ohýbání plechů na CNC ohraňovacích lisech dle výkresové dokumentace.</p>
+          </div>
+
+          <!-- CNC obrábění -->
+          <div class="group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand transition-colors">
+            <div class="w-12 h-12 mb-4 text-brand">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                <rect x="8" y="8" width="32" height="32" rx="4"/>
+                <circle cx="24" cy="24" r="8"/>
+                <circle cx="24" cy="24" r="2"/>
+                <path d="M24 16v-4M24 36v-4M16 24h-4M36 24h-4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">CNC obrábění</h3>
+            <p class="text-light/50 text-sm leading-relaxed">Soustružení a frézování kovových dílců na moderních CNC strojích s vysokou přesností.</p>
+          </div>
+
+          <!-- Laserové svařování -->
+          <div class="group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand transition-colors">
+            <div class="w-12 h-12 mb-4 text-brand">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                <path d="M24 6v14" stroke-linecap="round"/>
+                <path d="M18 20h12l-2 8h-8l-2-8z"/>
+                <path d="M22 28l-4 14M26 28l4 14" stroke-linecap="round"/>
+                <circle cx="24" cy="34" r="2"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Laserové svařování</h3>
+            <p class="text-light/50 text-sm leading-relaxed">Přesné svařování laserem s minimálním tepelným ovlivněním okolního materiálu.</p>
+          </div>
+
+          <!-- Povrchové úpravy -->
+          <div class="group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand transition-colors">
+            <div class="w-12 h-12 mb-4 text-brand">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+                <path d="M12 38c0-8 6-10 6-18a6 6 0 1 1 12 0c0 8 6 10 6 18" stroke-linecap="round"/>
+                <path d="M12 38h24" stroke-linecap="round"/>
+                <path d="M16 42h16" stroke-linecap="round"/>
+                <path d="M20 14l-4-4M28 14l4-4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold mb-2">Povrchové úpravy</h3>
+            <p class="text-light/50 text-sm leading-relaxed">Tryskání, lakování a další povrchové úpravy pro kompletní finalizaci vašich dílců.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== NAŠE STROJE ========== -->
+    <section id="machines" class="py-20 lg:py-28 bg-dark-alt/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl sm:text-4xl font-bold text-center mb-6">Naše stroje</h2>
+        <p class="text-light/60 text-center max-w-2xl mx-auto mb-16">
+          Moderní strojový park pro zajištění maximální kvality a přesnosti výroby.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Stroj 1 -->
+          <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 0ms">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+              <img src="Obrázky/laser-amada.png" alt="Laserový řezací stroj Amada ENSIS 3015 AJ" class="w-full h-full object-contain">
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Amada ENSIS 3015 AJ</h3>
+              <p class="text-light/40 text-sm leading-relaxed">
+                Fiber laser s výkonem 6 kW<br>
+                Max. formát plechu: 3 000 × 1 500 mm<br>
+                Ocel – 25 mm · Hliník – 25 mm · Měď – 12 mm
+              </p>
+            </div>
+          </div>
+
+          <!-- Stroj 2 -->
+          <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 100ms">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+              <img src="Obrázky/soustruh-Hi-Tech_230AL_YSMC.png" alt="CNC soustruh Hwacheon Hi-Tech 230AL YSMC" class="w-full h-full object-contain">
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Hwacheon Hi-TECH 230AL YSMC</h3>
+              <p class="text-light/40 text-sm leading-relaxed">
+                Dvou-vřetenové revolverové soustružnické centrum<br>
+                Průchod vřetene 65 mm · Max. ⌀ 300 mm · Délka 700 mm<br>
+                Poháněné nástroje · Y-osa 100 mm · Podavač tyčí
+              </p>
+            </div>
+          </div>
+
+          <!-- Stroj 3 -->
+          <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 200ms">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+              <img src="Obrázky/freza-haas.png" alt="CNC frézka Haas DT-2" class="w-full h-full object-contain">
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Haas DT-2</h3>
+              <p class="text-light/40 text-sm leading-relaxed">
+                Kompaktní vysokorychlostní CNC frézka<br>
+                Vřeteno BT30 · 10 000 rpm · 20 nástrojů<br>
+                Rychloposuvy 2 400 ipm · Vrtání a závitování
+              </p>
+            </div>
+          </div>
+
+          <!-- Stroj 4 -->
+          <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 300ms">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+              <img src="Obrázky/ohranovaci-lis-HFP.png" alt="Ohraňovací lis Amada HRB 1003 ATC" class="w-full h-full object-contain">
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Amada HFP-100.3 NTL</h3>
+              <p class="text-light/40 text-sm leading-relaxed">
+                Lisovací síla: 100 tun<br>
+                Max. délka ohybu: 3 100 mm · Mezi sloupy: 2 705 mm<br>
+                Zdvih: 620 mm · Max. tloušťka plechu: 4 mm (S235)
+              </p>
+            </div>
+          </div>
+
+          <!-- Stroj 5 -->
+          <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 400ms">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+              <img src="Obrázky/ohranovaci-lis-HFE.png" alt="Ohraňovací lis Amada HFE M2 5012" class="w-full h-full object-contain">
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Amada HFE M2 5012</h3>
+              <p class="text-light/40 text-sm leading-relaxed">
+                Lisovací síla: 50 tun<br>
+                Max. délka ohybu: 1 270 mm · Mezi sloupy: 1 035 mm<br>
+                Zdvih: 150 mm · Max. tloušťka plechu: 4 mm (S235)
+              </p>
+            </div>
+          </div>
+
+          <!-- Stroj 6 -->
+          <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 500ms">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+              <img src="Obrázky/laserova-svarecka.png" alt="Laserový svařovací stroj" class="w-full h-full object-contain">
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">BLW 1500</h3>
+              <p class="text-light/40 text-sm leading-relaxed">
+                Laserový ruční svařovací zdroj · 1 500 W<br>
+                Až 6× rychlejší než TIG · Min. tloušťka od 0,2 mm<br>
+                Ocel, nerez, hliník, měď, titan
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== DOTAČNÍ PROGRAMY ========== -->
+    <section id="grants" class="py-20 lg:py-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12">Dotační programy</h2>
+
+        <div class="max-w-4xl mx-auto bg-dark-alt border border-white/10 rounded-xl p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8">
+          <div class="shrink-0">
+            <img src="Obrázky/EU.png" alt="Vlajka Evropské unie" class="w-24 h-24 rounded-lg object-cover">
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold mb-3">Spolufinancováno Evropskou unií</h3>
+            <p class="text-light/60 leading-relaxed">
+              Naše společnost využívá prostředky z dotačních programů Evropské unie pro modernizaci
+              strojového parku a zvyšování kvality výrobních procesů. Díky těmto investicím vám můžeme
+              nabídnout nejmodernější technologie a nejvyšší kvalitu zpracování.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== KONTAKT ========== -->
+    <section id="contact" class="py-20 lg:py-28 bg-dark-alt/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl sm:text-4xl font-bold text-center mb-12">Kontakt</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+          <!-- Kontaktní údaje -->
+          <div class="space-y-8">
+
+            <!-- Osoby -->
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-brand">Kontaktní osoby</h3>
+              <div class="space-y-3">
+                <div>
+                  <p class="font-medium">Hynek Tomek</p>
+                  <a href="tel:+420603553073" class="text-light/60 hover:text-brand transition-colors text-sm">+420 603 553 073</a>
+                </div>
+                <div>
+                  <p class="font-medium">Zdeněk Dlabaja</p>
+                  <a href="tel:+420725970865" class="text-light/60 hover:text-brand transition-colors text-sm">+420 725 970 865</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <h3 class="text-lg font-semibold text-brand">E-mail</h3>
+              <a href="mailto:info@tomek-vyroba.cz" class="text-light/60 hover:text-brand transition-colors">info@tomek-vyroba.cz</a>
+            </div>
+
+            <!-- Adresy -->
+            <div class="space-y-3">
+              <h3 class="text-lg font-semibold text-brand">Adresy</h3>
+              <div>
+                <p class="text-sm text-light/40 mb-1">Sídlo</p>
+                <p class="text-light/70">Ruprechtov 271, 683 04 Ruprechtov</p>
+              </div>
+              <div>
+                <p class="text-sm text-light/40 mb-1">Provozovna</p>
+                <p class="text-light/70">Ruprechtov 271, 683 04 Ruprechtov</p>
+              </div>
+            </div>
+
+            <!-- Provozní doba -->
+            <div>
+              <h3 class="text-lg font-semibold text-brand">Provozní doba</h3>
+              <p class="text-light/70">Po — Pá: 6:00 — 14:30</p>
+            </div>
+
+            <!-- IČO / DIČ -->
+            <div class="flex gap-8">
+              <div>
+                <p class="text-sm text-light/40 mb-1">IČO</p>
+                <p class="text-light/70 font-mono">09444530</p>
+              </div>
+              <div>
+                <p class="text-sm text-light/40 mb-1">DIČ</p>
+                <p class="text-light/70 font-mono">CZ09444530</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mapa -->
+          <div class="rounded-xl overflow-hidden border border-white/10 min-h-[400px]">
+            <iframe
+              title="Mapa — TOMEK výroba s.r.o., Ruprechtov 271"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2607.0!2d16.858!3d49.318!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4712943b0e2e1b7d%3A0x400af0f6614b1b0!2sRuprechtov+271%2C+683+04+Ruprechtov!5e0!3m2!1scs!2scz!4v1700000000000!5m2!1scs!2scz"
+              width="100%"
+              height="100%"
+              style="border:0; min-height:400px;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="border-t border-white/10 bg-dark py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+        <!-- Info -->
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <img src="LOGO/logo.png" alt="TOMEK výroba s.r.o. logo" class="w-8 h-8 rounded-md">
+            <span class="font-semibold">TOMEK výroba s.r.o.</span>
+          </div>
+          <p class="text-light/50 text-sm leading-relaxed">
+            Průmyslová výroba dílců na míru. Laserové pálení, ohýbání, CNC obrábění, svařování a povrchové úpravy.
+          </p>
+        </div>
+
+        <!-- Rychlé odkazy -->
+        <div>
+          <h4 class="font-semibold mb-4">Rychlé odkazy</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#about" class="text-light/50 hover:text-white transition-colors">O společnosti</a></li>
+            <li><a href="#machines" class="text-light/50 hover:text-white transition-colors">Naše stroje</a></li>
+            <li><a href="#grants" class="text-light/50 hover:text-white transition-colors">Dotační programy</a></li>
+            <li><a href="#contact" class="text-light/50 hover:text-white transition-colors">Kontakt</a></li>
+          </ul>
+        </div>
+
+        <!-- E-shop -->
+        <div>
+          <h4 class="font-semibold mb-4">Partnerský e-shop</h4>
+          <p class="text-light/50 text-sm mb-3">Navštivte náš e-shop s nářadím a příslušenstvím.</p>
+          <a
+            href="https://www.tomek-naradi.cz"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 text-brand hover:text-brand-light transition-colors text-sm font-medium"
+          >
+            Tomek-nářadí.cz
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+            </svg>
+          </a>
+        </div>
+
+      </div>
+
+      <div class="mt-10 pt-6 border-t border-white/10 text-center text-light/30 text-sm">
+        &copy; 2026 TOMEK výroba s.r.o. Všechna práva vyhrazena.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== JAVASCRIPT ========== -->
+  <script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    menuToggle.addEventListener('click', () => {
+      const isOpen = !mobileMenu.classList.contains('hidden');
+      mobileMenu.classList.toggle('hidden');
+      menuToggle.setAttribute('aria-expanded', !isOpen);
+    });
+
+    function closeMobileMenu() {
+      mobileMenu.classList.add('hidden');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.slide-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
