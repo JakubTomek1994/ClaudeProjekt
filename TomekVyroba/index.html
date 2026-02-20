@@ -120,6 +120,26 @@
       border: 2px dashed rgba(255,255,255,0.2);
       transition: border-color 0.2s, background-color 0.2s;
     }
+    .carousel-container {
+      touch-action: pan-y;
+    }
+
+    /* Lightbox animations */
+    @keyframes lightboxFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes lightboxFadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    #lightbox-overlay {
+      animation: lightboxFadeIn 0.25s ease-out forwards;
+    }
+    #lightbox-overlay.closing {
+      animation: lightboxFadeOut 0.2s ease-in forwards;
+    }
+
     .upload-zone:hover,
     .upload-zone.dragover {
       border-color: var(--color-primary);
@@ -153,7 +173,9 @@
       <ul class="hidden lg:flex items-center gap-8 text-sm">
         <li><a href="#about" class="nav-link text-light/70 hover:text-white transition-colors">O společnosti</a></li>
         <li><a href="#machines" class="nav-link text-light/70 hover:text-white transition-colors">Naše stroje</a></li>
+        <li><a href="#gallery" class="nav-link text-light/70 hover:text-white transition-colors">Galerie</a></li>
         <li><a href="#grants" class="nav-link text-light/70 hover:text-white transition-colors">Dotační programy</a></li>
+        <li><a href="#testimonials" class="nav-link text-light/70 hover:text-white transition-colors">Reference</a></li>
         <li>
           <a href="#contact" class="inline-block px-5 py-2 bg-brand hover:bg-brand-hover text-white text-sm font-medium rounded-md transition-colors">
             Kontakt
@@ -182,7 +204,9 @@
       <ul class="flex flex-col px-4 py-4 gap-3 text-sm">
         <li><a href="#about" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">O společnosti</a></li>
         <li><a href="#machines" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">Naše stroje</a></li>
+        <li><a href="#gallery" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">Galerie</a></li>
         <li><a href="#grants" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">Dotační programy</a></li>
+        <li><a href="#testimonials" class="block py-2 text-light/70 hover:text-white transition-colors" onclick="closeMobileMenu()">Reference</a></li>
         <li>
           <a href="#contact" class="inline-block px-5 py-2 bg-brand hover:bg-brand-hover text-white text-sm font-medium rounded-md transition-colors" onclick="closeMobileMenu()">
             Kontakt
@@ -579,7 +603,7 @@
           <!-- Stroj 1 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 0ms">
             <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
-              <img src="Obrázky/laser-amada.png" alt="Laserový řezací stroj Amada ENSIS 3015 AJ" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <img src="Obrázky/laser-amada.png" alt="Laserový řezací stroj Amada ENSIS 3015 AJ" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Amada ENSIS 3015 AJ</h3>
@@ -594,7 +618,7 @@
           <!-- Stroj 2 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 100ms">
             <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
-              <img src="Obrázky/soustruh-Hi-Tech_230AL_YSMC.png" alt="CNC soustruh Hwacheon Hi-Tech 230AL YSMC" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <img src="Obrázky/soustruh-Hi-Tech_230AL_YSMC.png" alt="CNC soustruh Hwacheon Hi-Tech 230AL YSMC" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Hwacheon Hi-TECH 230AL YSMC</h3>
@@ -609,7 +633,7 @@
           <!-- Stroj 3 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 200ms">
             <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
-              <img src="Obrázky/freza-haas.png" alt="CNC frézka Haas DT-2" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <img src="Obrázky/freza-haas.png" alt="CNC frézka Haas DT-2" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Haas DT-2</h3>
@@ -624,7 +648,7 @@
           <!-- Stroj 4 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 300ms">
             <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
-              <img src="Obrázky/ohranovaci-lis-HFP.png" alt="Ohraňovací lis Amada HRB 1003 ATC" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <img src="Obrázky/ohranovaci-lis-HFP.png" alt="Ohraňovací lis Amada HRB 1003 ATC" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Amada HFP-100.3 NTL</h3>
@@ -639,7 +663,7 @@
           <!-- Stroj 5 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 400ms">
             <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
-              <img src="Obrázky/ohranovaci-lis-HFE.png" alt="Ohraňovací lis Amada HFE M2 5012" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <img src="Obrázky/ohranovaci-lis-HFE.png" alt="Ohraňovací lis Amada HFE M2 5012" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Amada HFE M2 5012</h3>
@@ -654,7 +678,7 @@
           <!-- Stroj 6 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 500ms">
             <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
-              <img src="Obrázky/laserova-svarecka.png" alt="Laserový svařovací stroj" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <img src="Obrázky/laserova-svarecka.png" alt="Laserový svařovací stroj" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">BLW 1500</h3>
@@ -670,10 +694,48 @@
       </div>
     </section>
 
-    <!-- Divider: machines → grants -->
+    <!-- Divider: machines → gallery -->
     <div class="relative h-12 md:h-20 bg-dark">
       <svg class="absolute top-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1200 120">
         <path d="M0,0 L1200,0 L1200,120 Z" fill="var(--color-bg-dark-alt)"/>
+      </svg>
+    </div>
+
+    <!-- ========== GALERIE ========== -->
+    <section id="gallery" class="py-20 lg:py-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="section-heading text-center mb-6">
+          <h2 class="text-3xl sm:text-4xl font-bold">Galerie</h2>
+          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+        </div>
+        <p class="text-light/60 text-center max-w-2xl mx-auto mb-16">
+          Ukázky naší práce
+        </p>
+
+        <!-- Filter bar -->
+        <div id="gallery-filters" class="flex flex-wrap justify-center gap-2 mb-10">
+          <button data-filter="all" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-brand text-white">Vše</button>
+          <button data-filter="Laserové řezání" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-dark-card text-light/60 hover:text-white border border-white/10">Laserové řezání</button>
+          <button data-filter="CNC obrábění" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-dark-card text-light/60 hover:text-white border border-white/10">CNC obrábění</button>
+          <button data-filter="Ohýbání" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-dark-card text-light/60 hover:text-white border border-white/10">Ohýbání</button>
+          <button data-filter="Svařování" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-dark-card text-light/60 hover:text-white border border-white/10">Svařování</button>
+          <button data-filter="Povrchové úpravy" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-dark-card text-light/60 hover:text-white border border-white/10">Povrchové úpravy</button>
+        </div>
+
+        <!-- Dynamic grid -->
+        <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+
+        <!-- Show more button -->
+        <div id="gallery-more-wrap" class="text-center mt-10 hidden">
+          <button id="gallery-more-btn" class="border border-white/10 hover:border-brand text-light/70 hover:text-white px-6 py-3 rounded-lg transition-colors cursor-pointer">Zobrazit více (<span id="gallery-more-count"></span>)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Divider: gallery → grants -->
+    <div class="relative h-12 md:h-20 bg-dark-alt/50">
+      <svg class="absolute top-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1200 120">
+        <path d="M1200,0 L0,0 L0,120 Z" fill="var(--color-bg-dark)"/>
       </svg>
     </div>
 
@@ -687,7 +749,7 @@
 
         <div class="max-w-4xl mx-auto bg-dark-alt border border-white/10 rounded-xl p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8">
           <div class="shrink-0">
-            <img src="Obrázky/EU.png" alt="Vlajka Evropské unie" class="w-24 h-24 rounded-lg object-cover">
+            <img src="Obrázky/EU.png" alt="Vlajka Evropské unie" loading="lazy" class="w-24 h-24 rounded-lg object-cover">
           </div>
           <div>
             <h3 class="text-xl font-semibold mb-3">Spolufinancováno Evropskou unií</h3>
@@ -701,11 +763,145 @@
       </div>
     </section>
 
-    <!-- Divider: grants → contact -->
+    <!-- Divider: grants → testimonials -->
     <div class="relative h-12 md:h-20 bg-dark-alt/50">
       <svg class="absolute top-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1200 120">
         <path d="M1200,0 L0,0 L0,120 Z" fill="var(--color-bg-dark)"/>
       </svg>
+    </div>
+
+    <!-- ========== REFERENCE ========== -->
+    <section id="testimonials" class="py-20 lg:py-28 bg-dark-alt/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="section-heading text-center mb-4">
+          <h2 class="text-3xl sm:text-4xl font-bold">Reference</h2>
+          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+        </div>
+        <p class="text-center text-light/60 mb-12 slide-in">Co o nás říkají naši zákazníci</p>
+
+        <!-- Carousel -->
+        <div class="relative slide-in">
+          <div id="carousel-container" class="carousel-container overflow-hidden">
+            <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out">
+
+              <!-- Slide 1 -->
+              <div class="w-full flex-shrink-0 px-2 sm:px-4">
+                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                  <div class="flex gap-1 mb-4">
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  </div>
+                  <blockquote class="text-light/80 italic text-lg sm:text-xl mb-6">&ldquo;S firmou TOMEK spolupracujeme již třetím rokem na laserových výpalcích. Kvalita řezu je výborná, dodací lhůty vždy dodržené. Jednoznačně doporučujeme.&rdquo;</blockquote>
+                  <div>
+                    <p class="font-semibold text-light">Ing. Martin Procházka</p>
+                    <p class="text-light/50 text-sm">KOVOSTROJ s.r.o.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 2 -->
+              <div class="w-full flex-shrink-0 px-2 sm:px-4">
+                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                  <div class="flex gap-1 mb-4">
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  </div>
+                  <blockquote class="text-light/80 italic text-lg sm:text-xl mb-6">&ldquo;Potřebovali jsme urgentně vysoustružit náhradní díly pro odstavenou linku. TOMEK nás zachránil — dodání do 48 hodin. Profesionální přístup.&rdquo;</blockquote>
+                  <div>
+                    <p class="font-semibold text-light">Petr Dvořák</p>
+                    <p class="text-light/50 text-sm">HYDRAULIK SERVIS a.s.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 3 -->
+              <div class="w-full flex-shrink-0 px-2 sm:px-4">
+                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                  <div class="flex gap-1 mb-4">
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-light/20" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  </div>
+                  <blockquote class="text-light/80 italic text-lg sm:text-xl mb-6">&ldquo;Ohýbané díly přesně podle výkresové dokumentace, i přes nestandardní rozměry. Komunikace na jedničku, rádi se vracíme.&rdquo;</blockquote>
+                  <div>
+                    <p class="font-semibold text-light">Jana Křížová</p>
+                    <p class="text-light/50 text-sm">ELMECH CZ s.r.o.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 4 -->
+              <div class="w-full flex-shrink-0 px-2 sm:px-4">
+                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                  <div class="flex gap-1 mb-4">
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  </div>
+                  <blockquote class="text-light/80 italic text-lg sm:text-xl mb-6">&ldquo;Laserové svařování od TOMEK výroba předčilo naše očekávání. Minimální deformace materiálu a čistý svar — přesně to, co jsme hledali.&rdquo;</blockquote>
+                  <div>
+                    <p class="font-semibold text-light">Tomáš Bartoš</p>
+                    <p class="text-light/50 text-sm">PRECIS TECH spol. s r.o.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Slide 5 -->
+              <div class="w-full flex-shrink-0 px-2 sm:px-4">
+                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                  <div class="flex gap-1 mb-4">
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                  </div>
+                  <blockquote class="text-light/80 italic text-lg sm:text-xl mb-6">&ldquo;Ocenili jsme možnost zadat kompletní zakázku pod jednou střechou — od laserového řezání přes ohýbání až po povrchovou úpravu. Šetří nám to čas i peníze.&rdquo;</blockquote>
+                  <div>
+                    <p class="font-semibold text-light">Ing. Lucie Nováková</p>
+                    <p class="text-light/50 text-sm">AGRI COMPONENTS s.r.o.</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Prev/Next arrows -->
+          <button id="carousel-prev" aria-label="Předchozí recenze" class="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-2 sm:-translate-x-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-dark border border-white/10 hover:border-brand flex items-center justify-center transition-colors cursor-pointer">
+            <svg class="w-5 h-5 text-light" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button id="carousel-next" aria-label="Další recenze" class="absolute top-1/2 -translate-y-1/2 right-0 translate-x-2 sm:translate-x-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-dark border border-white/10 hover:border-brand flex items-center justify-center transition-colors cursor-pointer">
+            <svg class="w-5 h-5 text-light" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+
+          <!-- Dot indicators -->
+          <div id="carousel-dots" class="flex justify-center gap-2 mt-8">
+            <button class="w-3 h-3 rounded-full bg-brand transition-colors cursor-pointer" aria-label="Slide 1" data-slide="0"></button>
+            <button class="w-3 h-3 rounded-full bg-light/20 hover:bg-light/40 transition-colors cursor-pointer" aria-label="Slide 2" data-slide="1"></button>
+            <button class="w-3 h-3 rounded-full bg-light/20 hover:bg-light/40 transition-colors cursor-pointer" aria-label="Slide 3" data-slide="2"></button>
+            <button class="w-3 h-3 rounded-full bg-light/20 hover:bg-light/40 transition-colors cursor-pointer" aria-label="Slide 4" data-slide="3"></button>
+            <button class="w-3 h-3 rounded-full bg-light/20 hover:bg-light/40 transition-colors cursor-pointer" aria-label="Slide 5" data-slide="4"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Divider: testimonials → contact -->
+    <div class="bg-dark-alt/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="h-px bg-white/10"></div>
+      </div>
     </div>
 
     <!-- ========== KONTAKT ========== -->
@@ -715,6 +911,13 @@
           <h2 class="text-3xl sm:text-4xl font-bold">Kontakt</h2>
           <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
         </div>
+
+        <p class="text-center mb-12">
+          <button onclick="openContactModal()" class="inline-flex items-center gap-2 px-6 py-3 bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg transition-colors cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+            Napište nám
+          </button>
+        </p>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
@@ -836,7 +1039,9 @@
           <ul class="space-y-2 text-sm">
             <li><a href="#about" class="text-light/50 hover:text-white transition-colors">O společnosti</a></li>
             <li><a href="#machines" class="text-light/50 hover:text-white transition-colors">Naše stroje</a></li>
+            <li><a href="#gallery" class="text-light/50 hover:text-white transition-colors">Galerie</a></li>
             <li><a href="#grants" class="text-light/50 hover:text-white transition-colors">Dotační programy</a></li>
+            <li><a href="#testimonials" class="text-light/50 hover:text-white transition-colors">Reference</a></li>
             <li><a href="#contact" class="text-light/50 hover:text-white transition-colors">Kontakt</a></li>
           </ul>
         </div>
@@ -926,6 +1131,29 @@
           Odeslat poptávku
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- ========== LIGHTBOX ========== -->
+  <div id="lightbox-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);" onclick="if(event.target===this)closeLightbox()">
+    <button onclick="closeLightbox()" class="absolute top-4 right-4 p-2 text-light/60 hover:text-white transition-colors rounded-full hover:bg-white/10 cursor-pointer z-10" aria-label="Zavřít">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <button id="lightbox-prev" class="absolute top-1/2 -translate-y-1/2 left-2 sm:left-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-dark/80 border border-white/10 hover:border-brand flex items-center justify-center transition-colors cursor-pointer z-10" aria-label="Předchozí">
+      <svg class="w-5 h-5 text-light" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <button id="lightbox-next" class="absolute top-1/2 -translate-y-1/2 right-2 sm:right-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-dark/80 border border-white/10 hover:border-brand flex items-center justify-center transition-colors cursor-pointer z-10" aria-label="Další">
+      <svg class="w-5 h-5 text-light" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <div class="max-w-3xl w-full text-center">
+      <div id="lightbox-content" class="bg-dark-card rounded-xl aspect-video flex flex-col items-center justify-center gap-3 mb-4">
+        <svg class="w-16 h-16 text-light/20" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+        </svg>
+        <p id="lightbox-title" class="text-light/60 text-lg font-medium"></p>
+        <p id="lightbox-subtitle" class="text-light/40 text-sm"></p>
+      </div>
+      <p id="lightbox-counter" class="text-light/40 text-sm"></p>
     </div>
   </div>
 
@@ -1151,7 +1379,6 @@
 
     // ========== PARALLAX HERO ==========
     const heroBg = document.getElementById('hero-bg');
-    const heroLines = document.getElementById('hero-lines');
     const heroSection = document.getElementById('hero');
 
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -1161,10 +1388,257 @@
         if (scrollY <= heroHeight) {
           const offset = scrollY * 0.3;
           heroBg.style.transform = 'translateY(' + offset + 'px)';
-          heroLines.style.transform = 'translateY(' + (offset * 0.6) + 'px)';
         }
       }, { passive: true });
     }
+
+    // ========== TESTIMONIALS CAROUSEL ==========
+    (function() {
+      const track = document.getElementById('carousel-track');
+      const container = document.getElementById('carousel-container');
+      const dots = document.querySelectorAll('#carousel-dots button');
+      const prevBtn = document.getElementById('carousel-prev');
+      const nextBtn = document.getElementById('carousel-next');
+      const totalSlides = dots.length;
+      let currentSlide = 0;
+      let autoplayTimer = null;
+
+      function goToSlide(index) {
+        currentSlide = ((index % totalSlides) + totalSlides) % totalSlides;
+        track.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+        dots.forEach(function(dot, i) {
+          if (i === currentSlide) {
+            dot.classList.remove('bg-light/20', 'hover:bg-light/40');
+            dot.classList.add('bg-brand');
+          } else {
+            dot.classList.remove('bg-brand');
+            dot.classList.add('bg-light/20', 'hover:bg-light/40');
+          }
+        });
+      }
+
+      prevBtn.addEventListener('click', function() { goToSlide(currentSlide - 1); resetAutoplay(); });
+      nextBtn.addEventListener('click', function() { goToSlide(currentSlide + 1); resetAutoplay(); });
+
+      dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+          goToSlide(parseInt(this.dataset.slide, 10));
+          resetAutoplay();
+        });
+      });
+
+      function startAutoplay() {
+        autoplayTimer = setInterval(function() { goToSlide(currentSlide + 1); }, 6000);
+      }
+
+      function resetAutoplay() {
+        clearInterval(autoplayTimer);
+        startAutoplay();
+      }
+
+      container.addEventListener('mouseenter', function() { clearInterval(autoplayTimer); });
+      container.addEventListener('mouseleave', function() { startAutoplay(); });
+
+      startAutoplay();
+
+      // Touch swipe support
+      var touchStartX = 0;
+      var touchEndX = 0;
+
+      container.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      container.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        var diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) { goToSlide(currentSlide + 1); }
+          else { goToSlide(currentSlide - 1); }
+          resetAutoplay();
+        }
+      }, { passive: true });
+
+      // Keyboard arrow support when section is in viewport
+      var testimonialsSection = document.getElementById('testimonials');
+      var isSectionVisible = false;
+
+      var carouselObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) { isSectionVisible = entry.isIntersecting; });
+      }, { threshold: 0.3 });
+
+      carouselObserver.observe(testimonialsSection);
+
+      document.addEventListener('keydown', function(e) {
+        if (!isSectionVisible) return;
+        if (e.key === 'ArrowLeft') { goToSlide(currentSlide - 1); resetAutoplay(); }
+        if (e.key === 'ArrowRight') { goToSlide(currentSlide + 1); resetAutoplay(); }
+      });
+    })();
+
+    // ========== GALLERY (data-driven + filters + lightbox) ==========
+    (function() {
+      var galleryItems = [
+        { category: 'Laserové řezání',  title: 'Výpalek z oceli' },
+        { category: 'Laserové řezání',  title: 'Přesný řez nerez' },
+        { category: 'CNC obrábění',     title: 'Soustružený díl' },
+        { category: 'CNC obrábění',     title: 'Frézovaný komponent' },
+        { category: 'Ohýbání',          title: 'Ohýbaný profil' },
+        { category: 'Ohýbání',          title: 'Složitý ohyb' },
+        { category: 'Svařování',        title: 'Svařovaný díl' },
+        { category: 'Povrchové úpravy', title: 'Práškový lak' }
+      ];
+
+      var categoryIcons = {
+        'Laserové řezání':  '<circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke-linecap="round"/>',
+        'CNC obrábění':     '<rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1.5"/>',
+        'Ohýbání':          '<path d="M4 20h6c2 0 3-1 3-3V7c0-2 1-3 3-3h4" stroke-linecap="round"/>',
+        'Svařování':        '<path d="M12 3v7" stroke-linecap="round"/><path d="M9 10h6l-1 4h-4l-1-4z"/><path d="M11 14l-2 7M13 14l2 7" stroke-linecap="round"/>',
+        'Povrchové úpravy': '<path d="M6 20c0-4 3-5 3-9a3 3 0 1 1 6 0c0 4 3 5 3 9" stroke-linecap="round"/><path d="M6 20h12" stroke-linecap="round"/><path d="M8 22h8" stroke-linecap="round"/>'
+      };
+
+      var ITEMS_PER_PAGE = 8;
+      var activeFilter = 'all';
+      var visibleCount = ITEMS_PER_PAGE;
+
+      var gridEl = document.getElementById('gallery-grid');
+      var moreWrap = document.getElementById('gallery-more-wrap');
+      var moreCount = document.getElementById('gallery-more-count');
+      var filterBtns = document.querySelectorAll('#gallery-filters button');
+
+      // --- Rendering ---
+      function getFiltered() {
+        if (activeFilter === 'all') return galleryItems.map(function(item, i) { return { item: item, globalIndex: i }; });
+        return galleryItems.reduce(function(acc, item, i) {
+          if (item.category === activeFilter) acc.push({ item: item, globalIndex: i });
+          return acc;
+        }, []);
+      }
+
+      function renderGallery() {
+        var filtered = getFiltered();
+        var visible = filtered.slice(0, visibleCount);
+        var html = '';
+        visible.forEach(function(entry, i) {
+          var item = entry.item;
+          var icon = categoryIcons[item.category] || '';
+          var delay = (i % ITEMS_PER_PAGE) * 50;
+          html += '<div class="slide-in aspect-video bg-dark-card rounded-xl overflow-hidden cursor-pointer group border border-transparent hover:border-brand/50 hover:scale-105 transition-all duration-300" onclick="openLightbox(' + entry.globalIndex + ')" style="transition-delay:' + delay + 'ms">'
+            + '<div class="w-full h-full flex flex-col items-center justify-center gap-2 p-4">'
+            + '<svg class="w-10 h-10 text-light/20 group-hover:text-brand/60 transition-colors" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">' + icon + '</svg>'
+            + '<p class="text-xs text-light/30 group-hover:text-light/60 transition-colors text-center">' + item.category + '</p>'
+            + '<p class="text-xs text-light/50 group-hover:text-light/80 transition-colors font-medium text-center">' + item.title + '</p>'
+            + '</div></div>';
+        });
+        gridEl.innerHTML = html;
+
+        var remaining = filtered.length - visibleCount;
+        if (remaining > 0) {
+          moreCount.textContent = remaining;
+          moreWrap.classList.remove('hidden');
+        } else {
+          moreWrap.classList.add('hidden');
+        }
+
+        // Re-observe new .slide-in elements for animation
+        var slideEls = gridEl.querySelectorAll('.slide-in');
+        if (window._gallerySlideObserver) {
+          slideEls.forEach(function(el) { window._gallerySlideObserver.observe(el); });
+        }
+      }
+
+      // Create a shared IntersectionObserver for gallery slide-in cards
+      window._gallerySlideObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            window._gallerySlideObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      // --- Filters ---
+      filterBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          activeFilter = btn.getAttribute('data-filter');
+          visibleCount = ITEMS_PER_PAGE;
+          filterBtns.forEach(function(b) {
+            b.className = 'px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer '
+              + (b === btn ? 'bg-brand text-white' : 'bg-dark-card text-light/60 hover:text-white border border-white/10');
+          });
+          renderGallery();
+        });
+      });
+
+      // --- Show more ---
+      document.getElementById('gallery-more-btn').addEventListener('click', function() {
+        visibleCount += ITEMS_PER_PAGE;
+        renderGallery();
+      });
+
+      // --- Lightbox ---
+      var overlay = document.getElementById('lightbox-overlay');
+      var titleEl = document.getElementById('lightbox-title');
+      var subtitleEl = document.getElementById('lightbox-subtitle');
+      var counterEl = document.getElementById('lightbox-counter');
+      var prevBtn = document.getElementById('lightbox-prev');
+      var nextBtn = document.getElementById('lightbox-next');
+      var currentGlobalIndex = 0;
+
+      function lightboxGoTo(globalIndex) {
+        var filtered = getFiltered();
+        // Find position in filtered list
+        var pos = -1;
+        for (var i = 0; i < filtered.length; i++) {
+          if (filtered[i].globalIndex === globalIndex) { pos = i; break; }
+        }
+        if (pos === -1) return;
+        currentGlobalIndex = globalIndex;
+        var item = galleryItems[globalIndex];
+        titleEl.textContent = item.title;
+        subtitleEl.textContent = item.category;
+        counterEl.textContent = (pos + 1) + ' / ' + filtered.length;
+      }
+
+      function lightboxNav(direction) {
+        var filtered = getFiltered();
+        var pos = -1;
+        for (var i = 0; i < filtered.length; i++) {
+          if (filtered[i].globalIndex === currentGlobalIndex) { pos = i; break; }
+        }
+        if (pos === -1) return;
+        var newPos = ((pos + direction) % filtered.length + filtered.length) % filtered.length;
+        lightboxGoTo(filtered[newPos].globalIndex);
+      }
+
+      window.openLightbox = function(globalIndex) {
+        overlay.classList.remove('hidden', 'closing');
+        document.body.style.overflow = 'hidden';
+        lightboxGoTo(globalIndex);
+      };
+
+      window.closeLightbox = function() {
+        overlay.classList.add('closing');
+        setTimeout(function() {
+          overlay.classList.add('hidden');
+          overlay.classList.remove('closing');
+          document.body.style.overflow = '';
+        }, 200);
+      };
+
+      prevBtn.addEventListener('click', function(e) { e.stopPropagation(); lightboxNav(-1); });
+      nextBtn.addEventListener('click', function(e) { e.stopPropagation(); lightboxNav(1); });
+
+      document.addEventListener('keydown', function(e) {
+        if (overlay.classList.contains('hidden')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') lightboxNav(-1);
+        if (e.key === 'ArrowRight') lightboxNav(1);
+      });
+
+      // --- Init ---
+      renderGallery();
+    })();
   </script>
 
 </body>
