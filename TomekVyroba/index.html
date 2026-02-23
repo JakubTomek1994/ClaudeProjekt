@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs" class="scroll-smooth">
+<html lang="cs" class="scroll-smooth" style="color-scheme: dark;">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +34,9 @@
     }
   }
   </script>
+  <meta name="theme-color" content="#292929">
   <link rel="icon" type="image/png" href="LOGO/logo.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style>
     :root {
@@ -61,11 +63,26 @@
       transition: width 0.6s ease-out 0.3s;
     }
     .section-heading.visible .heading-line {
-      width: 4rem;
+      width: 6rem;
+    }
+    .heading-line {
+      background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
     }
 
     .nav-link.active {
       color: var(--color-primary);
+      position: relative;
+    }
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--color-primary);
     }
 
     .hamburger.open .hamburger-line:nth-child(1) {
@@ -174,6 +191,15 @@
       border-color: var(--color-primary);
       background-color: rgba(225,20,46,0.05);
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
   <style type="text/tailwindcss">
     @theme {
@@ -187,7 +213,7 @@
     }
   </style>
 </head>
-<body class="bg-dark text-light font-sans antialiased">
+<body class="bg-dark text-light font-sans antialiased" style="touch-action: manipulation; -webkit-tap-highlight-color: rgba(225,20,46,0.15);">
 
   <!-- ========== NAVIGACE ========== -->
   <header class="sticky top-0 z-50 bg-dark/80 backdrop-blur-md border-b border-white/10">
@@ -221,9 +247,9 @@
         aria-controls="mobile-menu"
       >
         <div class="w-6 h-5 relative flex flex-col justify-between">
-          <span class="hamburger-line block h-0.5 w-full bg-current rounded transition-all duration-300 origin-center"></span>
-          <span class="hamburger-line block h-0.5 w-full bg-current rounded transition-all duration-300 origin-center"></span>
-          <span class="hamburger-line block h-0.5 w-full bg-current rounded transition-all duration-300 origin-center"></span>
+          <span class="hamburger-line block h-0.5 w-full bg-current rounded transition-[transform,opacity] duration-300 origin-center"></span>
+          <span class="hamburger-line block h-0.5 w-full bg-current rounded transition-[transform,opacity] duration-300 origin-center"></span>
+          <span class="hamburger-line block h-0.5 w-full bg-current rounded transition-[transform,opacity] duration-300 origin-center"></span>
         </div>
       </button>
     </nav>
@@ -254,10 +280,10 @@
         <svg class="w-full h-full" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" fill="none">
           <defs>
             <pattern id="bp-grid" width="50" height="50" patternUnits="userSpaceOnUse">
-              <path d="M50 0V50H0" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+              <path d="M50 0V50H0" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
             </pattern>
             <pattern id="bp-grid-sm" width="10" height="10" patternUnits="userSpaceOnUse">
-              <path d="M10 0V10H0" stroke="rgba(255,255,255,0.018)" stroke-width="0.3"/>
+              <path d="M10 0V10H0" stroke="rgba(255,255,255,0.025)" stroke-width="0.3"/>
             </pattern>
             <marker id="arrow-r" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
               <path d="M0,0 L7,2.5 L0,5" fill="rgba(255,255,255,0.12)"/>
@@ -466,20 +492,20 @@
             <!-- Accent bar -->
             <div class="hero-fade-left mx-auto lg:mx-0 w-[60px] h-[4px] bg-brand rounded-full mb-6" style="animation-delay: 0s;"></div>
             <!-- Heading -->
-            <h1 class="hero-fade-left text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight mb-6" style="animation-delay: 0.15s;">
+            <h1 class="hero-fade-left text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight mb-6" style="animation-delay: 0.15s; text-wrap: balance;">
               Průmyslová výroba<br>
               <span class="text-brand">na míru</span>
             </h1>
             <!-- Subtitle -->
-            <p class="hero-fade-left text-light/60 text-lg sm:text-xl max-w-xl mx-auto lg:mx-0 mb-8" style="animation-delay: 0.3s;">
+            <p class="hero-fade-left text-light/60 text-lg sm:text-xl max-w-xl mx-auto lg:mx-0 mb-8" style="animation-delay: 0.3s; text-wrap: pretty;">
               Laserové pálení, ohýbání, CNC obrábění, svařování a povrchové úpravy. Kusová i sériová výroba dílců dle vaší dokumentace.
             </p>
             <!-- CTA buttons -->
             <div class="hero-fade-left flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start" style="animation-delay: 0.45s;">
-              <button onclick="openContactModal()" class="inline-block px-8 py-3.5 bg-brand hover:bg-brand-hover text-white font-semibold rounded-md transition-colors text-lg cursor-pointer">
+              <button onclick="openContactModal()" class="inline-block px-8 py-3.5 bg-gradient-to-r from-brand to-brand-hover text-white font-semibold rounded-md transition-all text-lg cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
                 Kontaktujte nás
               </button>
-              <a href="#machines" class="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-brand text-brand hover:bg-brand hover:text-white font-semibold rounded-md transition-colors text-lg">
+              <a href="#machines" class="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-brand text-brand hover:bg-brand hover:text-white font-semibold rounded-md transition-all text-lg hover:shadow-lg hover:shadow-brand/20">
                 Naše stroje
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
               </a>
@@ -499,23 +525,23 @@
       </div>
 
       <!-- STATS BAR -->
-      <div class="relative z-10 w-full border-t border-white/10 mt-auto">
+      <div class="relative z-10 w-full border-t border-white/10 mt-auto bg-dark-alt/30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             <div class="hero-fade-up text-center" style="animation-delay: 0.6s;">
-              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand" data-count-target="5" data-count-suffix="+">0</p>
+              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand tabular-nums" data-count-target="5" data-count-suffix="+" style="text-shadow: 0 0 30px rgba(225,20,46,0.3)">0</p>
               <p class="text-light/50 text-base mt-2">CNC strojů</p>
             </div>
             <div class="hero-fade-up text-center" style="animation-delay: 0.7s;">
-              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand" data-count-target="5" data-count-suffix="">0</p>
+              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand tabular-nums" data-count-target="5" data-count-suffix="" style="text-shadow: 0 0 30px rgba(225,20,46,0.3)">0</p>
               <p class="text-light/50 text-base mt-2">Výrobních technologií</p>
             </div>
             <div class="hero-fade-up text-center" style="animation-delay: 0.8s;">
-              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand" data-count-target="100" data-count-suffix=" %">0</p>
+              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand tabular-nums" data-count-target="100" data-count-suffix=" %" style="text-shadow: 0 0 30px rgba(225,20,46,0.3)">0</p>
               <p class="text-light/50 text-base mt-2">Dle vaší dokumentace</p>
             </div>
             <div class="hero-fade-up text-center" style="animation-delay: 0.9s;">
-              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand" data-count-target="24" data-count-suffix=" h">0</p>
+              <p class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand tabular-nums" data-count-target="24" data-count-suffix=" h" style="text-shadow: 0 0 30px rgba(225,20,46,0.3)">0</p>
               <p class="text-light/50 text-base mt-2">Rychlá kalkulace</p>
             </div>
           </div>
@@ -524,13 +550,13 @@
     </section>
 
     <!-- ========== O SPOLEČNOSTI ========== -->
-    <section id="about" class="py-20 lg:py-28">
+    <section id="about" class="py-20 lg:py-28 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="section-heading text-center mb-6">
-          <h2 class="text-3xl sm:text-4xl font-bold">O společnosti</h2>
-          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+          <h2 class="text-3xl sm:text-4xl font-bold" style="text-wrap: balance;">O společnosti</h2>
+          <div class="heading-line h-0.5 mx-auto mt-3"></div>
         </div>
-        <p class="text-light/60 text-center max-w-3xl mx-auto mb-16 text-lg leading-relaxed">
+        <p class="text-light/60 text-center max-w-3xl mx-auto mb-16 text-lg leading-relaxed" style="text-wrap: pretty;">
           Firma TOMEK výroba s.r.o. se specializuje na výrobu dílců dle výkresové dokumentace zákazníka.
           Nabízíme přátelský přístup, rychlé dodací lhůty a flexibilní řešení jak pro kusovou, tak sériovou výrobu.
         </p>
@@ -539,9 +565,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
 
           <!-- Laserové pálení -->
-          <div class="slide-in group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-lg hover:shadow-brand/10 transition-all duration-300">
+          <div class="slide-in group bg-gradient-to-b from-white/[0.03] to-transparent bg-dark-alt border border-white/10 border-t-2 border-t-transparent hover:border-t-brand rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-xl hover:shadow-brand/15 transition-[transform,border-color,box-shadow] duration-300">
             <div class="w-12 h-12 mb-4 text-brand group-hover:scale-110 transition-transform duration-300">
-              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full" aria-hidden="true">
                 <circle cx="24" cy="24" r="4"/>
                 <path d="M24 4v8M24 36v8M4 24h8M36 24h8" stroke-linecap="round"/>
                 <path d="M10 10l6 6M32 32l6 6M10 38l6-6M32 16l6-6" stroke-linecap="round"/>
@@ -552,9 +578,9 @@
           </div>
 
           <!-- Ohýbání -->
-          <div class="slide-in group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-lg hover:shadow-brand/10 transition-all duration-300" style="transition-delay:100ms">
+          <div class="slide-in group bg-gradient-to-b from-white/[0.03] to-transparent bg-dark-alt border border-white/10 border-t-2 border-t-transparent hover:border-t-brand rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-xl hover:shadow-brand/15 transition-[transform,border-color,box-shadow] duration-300" style="transition-delay:100ms">
             <div class="w-12 h-12 mb-4 text-brand group-hover:scale-110 transition-transform duration-300">
-              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full" aria-hidden="true">
                 <path d="M8 36h12c4 0 6-2 6-6V18c0-4 2-6 6-6h8" stroke-linecap="round"/>
                 <path d="M36 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -564,9 +590,9 @@
           </div>
 
           <!-- CNC obrábění -->
-          <div class="slide-in group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-lg hover:shadow-brand/10 transition-all duration-300" style="transition-delay:200ms">
+          <div class="slide-in group bg-gradient-to-b from-white/[0.03] to-transparent bg-dark-alt border border-white/10 border-t-2 border-t-transparent hover:border-t-brand rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-xl hover:shadow-brand/15 transition-[transform,border-color,box-shadow] duration-300" style="transition-delay:200ms">
             <div class="w-12 h-12 mb-4 text-brand group-hover:scale-110 transition-transform duration-300">
-              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full" aria-hidden="true">
                 <rect x="8" y="8" width="32" height="32" rx="4"/>
                 <circle cx="24" cy="24" r="8"/>
                 <circle cx="24" cy="24" r="2"/>
@@ -578,9 +604,9 @@
           </div>
 
           <!-- Laserové svařování -->
-          <div class="slide-in group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-lg hover:shadow-brand/10 transition-all duration-300" style="transition-delay:300ms">
+          <div class="slide-in group bg-gradient-to-b from-white/[0.03] to-transparent bg-dark-alt border border-white/10 border-t-2 border-t-transparent hover:border-t-brand rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-xl hover:shadow-brand/15 transition-[transform,border-color,box-shadow] duration-300" style="transition-delay:300ms">
             <div class="w-12 h-12 mb-4 text-brand group-hover:scale-110 transition-transform duration-300">
-              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full" aria-hidden="true">
                 <path d="M24 6v14" stroke-linecap="round"/>
                 <path d="M18 20h12l-2 8h-8l-2-8z"/>
                 <path d="M22 28l-4 14M26 28l4 14" stroke-linecap="round"/>
@@ -592,9 +618,9 @@
           </div>
 
           <!-- Povrchové úpravy -->
-          <div class="slide-in group bg-dark-alt border border-white/10 rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-lg hover:shadow-brand/10 transition-all duration-300" style="transition-delay:400ms">
+          <div class="slide-in group bg-gradient-to-b from-white/[0.03] to-transparent bg-dark-alt border border-white/10 border-t-2 border-t-transparent hover:border-t-brand rounded-xl p-6 hover:border-brand hover:-translate-y-2 hover:shadow-xl hover:shadow-brand/15 transition-[transform,border-color,box-shadow] duration-300" style="transition-delay:400ms">
             <div class="w-12 h-12 mb-4 text-brand group-hover:scale-110 transition-transform duration-300">
-              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full" aria-hidden="true">
                 <path d="M12 38c0-8 6-10 6-18a6 6 0 1 1 12 0c0 8 6 10 6 18" stroke-linecap="round"/>
                 <path d="M12 38h24" stroke-linecap="round"/>
                 <path d="M16 42h16" stroke-linecap="round"/>
@@ -617,13 +643,13 @@
     </div>
 
     <!-- ========== NAŠE STROJE ========== -->
-    <section id="machines" class="py-20 lg:py-28 bg-dark-alt/50">
+    <section id="machines" class="py-20 lg:py-28 bg-dark-alt/50 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="section-heading text-center mb-6">
-          <h2 class="text-3xl sm:text-4xl font-bold">Naše stroje</h2>
-          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+          <h2 class="text-3xl sm:text-4xl font-bold" style="text-wrap: balance;">Naše stroje</h2>
+          <div class="heading-line h-0.5 mx-auto mt-3"></div>
         </div>
-        <p class="text-light/60 text-center max-w-2xl mx-auto mb-16">
+        <p class="text-light/60 text-center max-w-2xl mx-auto mb-16" style="text-wrap: pretty;">
           Moderní strojový park pro zajištění maximální kvality a přesnosti výroby.
         </p>
 
@@ -631,89 +657,95 @@
 
           <!-- Stroj 1 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 0ms">
-            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden relative">
               <img src="Obrázky/laser-amada.png" alt="Laserový řezací stroj Amada ENSIS 3015 AJ" width="906" height="593" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-40"></div>
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Amada ENSIS 3015 AJ</h3>
               <ul class="space-y-1.5 text-sm">
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Výkon: <span class="text-light/80 font-medium">6 kW</span> fiber laser</span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Formát plechu: <span class="text-light/80 font-medium">3 000 × 1 500 mm</span></span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Max. tloušťka: ocel <span class="text-light/80 font-medium">25 mm</span> · hliník <span class="text-light/80 font-medium">25 mm</span> · měď <span class="text-light/80 font-medium">12 mm</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Výkon: <span class="text-light/80 font-medium">6&nbsp;kW</span> fiber laser</span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Formát plechu: <span class="text-light/80 font-medium">3&nbsp;000 ×&nbsp;1&nbsp;500&nbsp;mm</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Max. tloušťka: ocel <span class="text-light/80 font-medium">25&nbsp;mm</span> · hliník <span class="text-light/80 font-medium">25&nbsp;mm</span> · měď <span class="text-light/80 font-medium">12&nbsp;mm</span></span></li>
               </ul>
             </div>
           </div>
 
           <!-- Stroj 2 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 100ms">
-            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden relative">
               <img src="Obrázky/soustruh-Hi-Tech_230AL_YSMC.png" alt="CNC soustruh Hwacheon Hi-Tech 230AL YSMC" width="1024" height="680" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-40"></div>
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Hwacheon Hi-TECH 230AL YSMC</h3>
               <ul class="space-y-1.5 text-sm">
                 <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Typ: <span class="text-light/80 font-medium">dvou-vřetenové</span> soustružnické centrum</span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Průchod vřetene <span class="text-light/80 font-medium">65 mm</span> · max. ⌀ <span class="text-light/80 font-medium">300 mm</span> · délka <span class="text-light/80 font-medium">700 mm</span></span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Poháněné nástroje · Y-osa <span class="text-light/80 font-medium">100 mm</span> · podavač tyčí</span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Průchod vřetene <span class="text-light/80 font-medium">65&nbsp;mm</span> · max.&nbsp;⌀&nbsp;<span class="text-light/80 font-medium">300&nbsp;mm</span> · délka <span class="text-light/80 font-medium">700&nbsp;mm</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Poháněné nástroje · Y-osa <span class="text-light/80 font-medium">100&nbsp;mm</span> · podavač tyčí</span></li>
               </ul>
             </div>
           </div>
 
           <!-- Stroj 3 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 200ms">
-            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden relative">
               <img src="Obrázky/freza-haas.png" alt="CNC frézka Haas DT-2" width="800" height="600" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-40"></div>
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Haas DT-2</h3>
               <ul class="space-y-1.5 text-sm">
                 <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Typ: kompaktní <span class="text-light/80 font-medium">vysokorychlostní</span> CNC frézka</span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Vřeteno BT30 · <span class="text-light/80 font-medium">10 000 rpm</span> · <span class="text-light/80 font-medium">20</span> nástrojů</span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Rychloposuvy <span class="text-light/80 font-medium">2 400 ipm</span> · vrtání a závitování</span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Vřeteno BT30 · <span class="text-light/80 font-medium">10&nbsp;000&nbsp;rpm</span> · <span class="text-light/80 font-medium">20</span>&nbsp;nástrojů</span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Rychloposuvy <span class="text-light/80 font-medium">2&nbsp;400&nbsp;ipm</span> · vrtání a závitování</span></li>
               </ul>
             </div>
           </div>
 
           <!-- Stroj 4 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 300ms">
-            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden relative">
               <img src="Obrázky/ohranovaci-lis-HFP.png" alt="Ohraňovací lis Amada HFP-100.3 NTL" width="649" height="383" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-40"></div>
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Amada HFP-100.3 NTL</h3>
               <ul class="space-y-1.5 text-sm">
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Lisovací síla: <span class="text-light/80 font-medium">100 tun</span></span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Délka ohybu <span class="text-light/80 font-medium">3 100 mm</span> · mezi sloupy <span class="text-light/80 font-medium">2 705 mm</span></span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Zdvih <span class="text-light/80 font-medium">620 mm</span> · max. plech <span class="text-light/80 font-medium">4 mm</span> (S235)</span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Lisovací síla: <span class="text-light/80 font-medium">100&nbsp;tun</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Délka ohybu <span class="text-light/80 font-medium">3&nbsp;100&nbsp;mm</span> · mezi sloupy <span class="text-light/80 font-medium">2&nbsp;705&nbsp;mm</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Zdvih <span class="text-light/80 font-medium">620&nbsp;mm</span> · max.&nbsp;plech <span class="text-light/80 font-medium">4&nbsp;mm</span> (S235)</span></li>
               </ul>
             </div>
           </div>
 
           <!-- Stroj 5 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 400ms">
-            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden relative">
               <img src="Obrázky/ohranovaci-lis-HFE.png" alt="Ohraňovací lis Amada HFE M2 5012" width="900" height="820" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-40"></div>
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">Amada HFE M2 5012</h3>
               <ul class="space-y-1.5 text-sm">
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Lisovací síla: <span class="text-light/80 font-medium">50 tun</span></span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Délka ohybu <span class="text-light/80 font-medium">1 270 mm</span> · mezi sloupy <span class="text-light/80 font-medium">1 035 mm</span></span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Zdvih <span class="text-light/80 font-medium">150 mm</span> · max. plech <span class="text-light/80 font-medium">4 mm</span> (S235)</span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Lisovací síla: <span class="text-light/80 font-medium">50&nbsp;tun</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Délka ohybu <span class="text-light/80 font-medium">1&nbsp;270&nbsp;mm</span> · mezi sloupy <span class="text-light/80 font-medium">1&nbsp;035&nbsp;mm</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Zdvih <span class="text-light/80 font-medium">150&nbsp;mm</span> · max.&nbsp;plech <span class="text-light/80 font-medium">4&nbsp;mm</span> (S235)</span></li>
               </ul>
             </div>
           </div>
 
           <!-- Stroj 6 -->
           <div class="slide-in bg-dark border border-white/10 rounded-xl overflow-hidden group hover:border-brand/50 transition-colors" style="transition-delay: 500ms">
-            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden">
+            <div class="aspect-video bg-dark-card flex items-center justify-center overflow-hidden relative">
               <img src="Obrázky/laserova-svarecka.png" alt="Laserový svařovací stroj" width="493" height="676" loading="lazy" class="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-110">
+              <div class="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent opacity-40"></div>
             </div>
             <div class="p-5">
               <h3 class="font-semibold mb-3">BLW 1500</h3>
               <ul class="space-y-1.5 text-sm">
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Výkon: <span class="text-light/80 font-medium">1 500 W</span> laserový svařovací zdroj</span></li>
-                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Až <span class="text-light/80 font-medium">6× rychlejší</span> než TIG · od <span class="text-light/80 font-medium">0,2 mm</span></span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Výkon: <span class="text-light/80 font-medium">1&nbsp;500&nbsp;W</span> laserový svařovací zdroj</span></li>
+                <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Až <span class="text-light/80 font-medium">6× rychlejší</span> než TIG · od <span class="text-light/80 font-medium">0,2&nbsp;mm</span></span></li>
                 <li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand shrink-0"></span><span class="text-light/50">Materiály: ocel, nerez, hliník, měď, titan</span></li>
               </ul>
             </div>
@@ -731,11 +763,11 @@
     </div>
 
     <!-- ========== GALERIE ========== -->
-    <section id="gallery" class="py-20 lg:py-28">
+    <section id="gallery" class="py-20 lg:py-28 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="section-heading text-center mb-6">
-          <h2 class="text-3xl sm:text-4xl font-bold">Galerie</h2>
-          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+          <h2 class="text-3xl sm:text-4xl font-bold" style="text-wrap: balance;">Galerie</h2>
+          <div class="heading-line h-0.5 mx-auto mt-3"></div>
         </div>
         <p class="text-light/60 text-center max-w-2xl mx-auto mb-16">
           Ukázky naší práce
@@ -769,11 +801,11 @@
     </div>
 
     <!-- ========== DOTAČNÍ PROGRAMY ========== -->
-    <section id="grants" class="py-20 lg:py-28">
+    <section id="grants" class="py-20 lg:py-28 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="section-heading text-center mb-12">
-          <h2 class="text-3xl sm:text-4xl font-bold">Dotační programy</h2>
-          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+          <h2 class="text-3xl sm:text-4xl font-bold" style="text-wrap: balance;">Dotační programy</h2>
+          <div class="heading-line h-0.5 mx-auto mt-3"></div>
         </div>
 
         <div class="max-w-4xl mx-auto bg-dark-alt border border-white/10 rounded-xl p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-8">
@@ -800,11 +832,11 @@
     </div>
 
     <!-- ========== REFERENCE ========== -->
-    <section id="testimonials" class="py-20 lg:py-28 bg-dark-alt/50">
+    <section id="testimonials" class="py-20 lg:py-28 bg-dark-alt/50 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="section-heading text-center mb-4">
-          <h2 class="text-3xl sm:text-4xl font-bold">Reference</h2>
-          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+          <h2 class="text-3xl sm:text-4xl font-bold" style="text-wrap: balance;">Reference</h2>
+          <div class="heading-line h-0.5 mx-auto mt-3"></div>
         </div>
         <p class="text-center text-light/60 mb-12 slide-in">Co o nás říkají naši zákazníci</p>
 
@@ -815,7 +847,7 @@
 
               <!-- Slide 1 -->
               <div class="w-full flex-shrink-0 px-2 sm:px-4">
-                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                <div class="bg-gradient-to-br from-dark to-dark-alt/50 border border-white/10 border-l-4 border-l-brand rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
                   <div class="flex gap-1 mb-4">
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -833,7 +865,7 @@
 
               <!-- Slide 2 -->
               <div class="w-full flex-shrink-0 px-2 sm:px-4">
-                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                <div class="bg-gradient-to-br from-dark to-dark-alt/50 border border-white/10 border-l-4 border-l-brand rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
                   <div class="flex gap-1 mb-4">
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -851,7 +883,7 @@
 
               <!-- Slide 3 -->
               <div class="w-full flex-shrink-0 px-2 sm:px-4">
-                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                <div class="bg-gradient-to-br from-dark to-dark-alt/50 border border-white/10 border-l-4 border-l-brand rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
                   <div class="flex gap-1 mb-4">
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -869,7 +901,7 @@
 
               <!-- Slide 4 -->
               <div class="w-full flex-shrink-0 px-2 sm:px-4">
-                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                <div class="bg-gradient-to-br from-dark to-dark-alt/50 border border-white/10 border-l-4 border-l-brand rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
                   <div class="flex gap-1 mb-4">
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -887,7 +919,7 @@
 
               <!-- Slide 5 -->
               <div class="w-full flex-shrink-0 px-2 sm:px-4">
-                <div class="bg-dark border border-white/10 rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
+                <div class="bg-gradient-to-br from-dark to-dark-alt/50 border border-white/10 border-l-4 border-l-brand rounded-xl p-8 sm:p-10 max-w-3xl mx-auto">
                   <div class="flex gap-1 mb-4">
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     <svg class="w-5 h-5 text-brand" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -934,15 +966,15 @@
     </div>
 
     <!-- ========== KONTAKT ========== -->
-    <section id="contact" class="py-20 lg:py-28 bg-dark-alt/50">
+    <section id="contact" class="py-20 lg:py-28 bg-dark-alt/50 scroll-mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="section-heading text-center mb-12">
-          <h2 class="text-3xl sm:text-4xl font-bold">Kontakt</h2>
-          <div class="heading-line h-0.5 bg-brand mx-auto mt-3"></div>
+          <h2 class="text-3xl sm:text-4xl font-bold" style="text-wrap: balance;">Kontakt</h2>
+          <div class="heading-line h-0.5 mx-auto mt-3"></div>
         </div>
 
         <p class="text-center mb-12">
-          <button onclick="openContactModal()" class="inline-flex items-center gap-2 px-6 py-3 bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg transition-colors cursor-pointer">
+          <button onclick="openContactModal()" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand to-brand-hover text-white font-semibold rounded-lg transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
             Napište nám
           </button>
@@ -956,19 +988,19 @@
             <!-- Osoby -->
             <div class="space-y-4">
               <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
                 <h3 class="text-lg font-semibold text-brand">Kontaktní osoby</h3>
               </div>
               <div class="space-y-3">
                 <div class="group flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                  <svg class="w-4 h-4 text-light/40 group-hover:text-brand transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
+                  <svg class="w-4 h-4 text-light/40 group-hover:text-brand transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
                   <div>
                     <p class="font-medium">Hynek Tomek</p>
                     <a href="tel:+420603553073" class="text-light/60 group-hover:text-brand transition-colors text-sm">+420 603 553 073</a>
                   </div>
                 </div>
                 <div class="group flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                  <svg class="w-4 h-4 text-light/40 group-hover:text-brand transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
+                  <svg class="w-4 h-4 text-light/40 group-hover:text-brand transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
                   <div>
                     <p class="font-medium">Zdeněk Dlabaja</p>
                     <a href="tel:+420725970865" class="text-light/60 group-hover:text-brand transition-colors text-sm">+420 725 970 865</a>
@@ -980,11 +1012,11 @@
             <!-- Email -->
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
                 <h3 class="text-lg font-semibold text-brand">E-mail</h3>
               </div>
               <a href="mailto:info@tomek-vyroba.cz" class="group inline-flex items-center gap-2 p-3 rounded-lg hover:bg-white/5 transition-colors">
-                <svg class="w-4 h-4 text-light/40 group-hover:text-brand transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                <svg class="w-4 h-4 text-light/40 group-hover:text-brand transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                 <span class="text-light/60 group-hover:text-brand transition-colors">info@tomek-vyroba.cz</span>
               </a>
             </div>
@@ -992,7 +1024,7 @@
             <!-- Adresy -->
             <div class="space-y-3">
               <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                 <h3 class="text-lg font-semibold text-brand">Adresy</h3>
               </div>
               <div class="p-3 rounded-lg hover:bg-white/5 transition-colors">
@@ -1008,7 +1040,7 @@
             <!-- Provozní doba -->
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <h3 class="text-lg font-semibold text-brand">Provozní doba</h3>
               </div>
               <p class="text-light/70 p-3">Po — Pá: 6:00 — 14:30</p>
@@ -1047,7 +1079,7 @@
   </main>
 
   <!-- ========== FOOTER ========== -->
-  <footer class="border-t border-white/10 bg-dark py-12">
+  <footer class="border-t bg-dark py-12" style="border-image: linear-gradient(90deg, transparent, rgba(225,20,46,0.4), transparent) 1;">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
 
@@ -1101,8 +1133,8 @@
   </footer>
 
   <!-- ========== KONTAKTNÍ MODAL ========== -->
-  <div id="contact-modal-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
-    <div id="contact-modal-box" class="bg-dark-alt border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative">
+  <div id="contact-modal-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); overscroll-behavior: contain;">
+    <div id="contact-modal-box" class="bg-gradient-to-br from-dark-alt to-dark border border-white/10 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl sm:text-2xl font-bold">Kontaktujte nás</h2>
@@ -1116,34 +1148,34 @@
         <!-- Jméno -->
         <div>
           <label for="cf-name" class="block text-sm font-medium text-light/70 mb-1.5">Jméno a příjmení <span class="text-brand">*</span></label>
-          <input type="text" id="cf-name" name="name" required placeholder="Jan Novák"
-            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors">
+          <input type="text" id="cf-name" name="name" required placeholder="Jan Novák" autocomplete="name"
+            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand transition-colors">
         </div>
 
         <!-- Email -->
         <div>
           <label for="cf-email" class="block text-sm font-medium text-light/70 mb-1.5">E-mail <span class="text-brand">*</span></label>
-          <input type="email" id="cf-email" name="email" required placeholder="jan@firma.cz"
-            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors">
+          <input type="email" id="cf-email" name="email" required placeholder="jan@firma.cz" autocomplete="email" spellcheck="false"
+            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand transition-colors">
         </div>
 
         <!-- Telefon -->
         <div>
           <label for="cf-phone" class="block text-sm font-medium text-light/70 mb-1.5">Telefon</label>
-          <input type="tel" id="cf-phone" name="phone" placeholder="+420 123 456 789"
-            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors">
+          <input type="tel" id="cf-phone" name="phone" placeholder="+420 123 456 789" autocomplete="tel" spellcheck="false"
+            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand transition-colors">
         </div>
 
         <!-- Zpráva -->
         <div>
           <label for="cf-message" class="block text-sm font-medium text-light/70 mb-1.5">Zpráva <span class="text-brand">*</span></label>
-          <textarea id="cf-message" name="message" required rows="4" placeholder="Popište vaši poptávku..."
-            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors resize-y"></textarea>
+          <textarea id="cf-message" name="message" required rows="4" placeholder="Popište vaši poptávku…"
+            class="w-full px-4 py-2.5 bg-dark border border-white/15 rounded-lg text-light placeholder-light/30 focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand transition-colors resize-y"></textarea>
         </div>
 
         <!-- PDF upload -->
         <div>
-          <label class="block text-sm font-medium text-light/70 mb-1.5">Příloha (PDF, max 10 MB)</label>
+          <label class="block text-sm font-medium text-light/70 mb-1.5">Příloha (PDF, max 10&nbsp;MB)</label>
           <div id="upload-zone" class="upload-zone rounded-lg p-6 text-center cursor-pointer">
             <input type="file" id="cf-file" name="attachment" accept=".pdf" class="hidden">
             <svg class="w-10 h-10 mx-auto mb-2 text-light/30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -1156,7 +1188,7 @@
         </div>
 
         <!-- Submit -->
-        <button type="submit" class="w-full py-3 bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg transition-colors text-base cursor-pointer">
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-brand to-brand-hover text-white font-semibold rounded-lg transition-all text-base cursor-pointer hover:scale-[1.01] active:scale-[0.99]">
           Odeslat poptávku
         </button>
       </form>
@@ -1164,7 +1196,7 @@
   </div>
 
   <!-- ========== LIGHTBOX ========== -->
-  <div id="lightbox-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);" onclick="if(event.target===this)closeLightbox()">
+  <div id="lightbox-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-4 hidden" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); overscroll-behavior: contain;" onclick="if(event.target===this)closeLightbox()">
     <button onclick="closeLightbox()" class="absolute top-4 right-4 p-2 text-light/60 hover:text-white transition-colors rounded-full hover:bg-white/10 cursor-pointer z-10" aria-label="Zavřít">
       <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
@@ -1188,7 +1220,7 @@
 
   <!-- Back to top -->
   <button id="back-to-top" aria-label="Zpět nahoru"
-    class="fixed bottom-6 right-6 z-50 w-11 h-11 bg-brand hover:bg-brand-hover text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
+    class="fixed bottom-6 right-6 z-50 w-11 h-11 bg-brand hover:bg-brand-hover text-white rounded-full shadow-lg flex items-center justify-center transition-[opacity,transform,background-color] duration-300 opacity-0 translate-y-4 pointer-events-none">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
     </svg>
@@ -1552,7 +1584,7 @@
           var item = entry.item;
           var icon = categoryIcons[item.category] || '';
           var delay = (i % ITEMS_PER_PAGE) * 50;
-          html += '<div class="slide-in aspect-video bg-dark-card rounded-xl overflow-hidden cursor-pointer group border border-transparent hover:border-brand/50 hover:scale-105 transition-all duration-300" onclick="openLightbox(' + entry.globalIndex + ')" style="transition-delay:' + delay + 'ms">'
+          html += '<div class="slide-in aspect-video bg-dark-card rounded-xl overflow-hidden cursor-pointer group border border-transparent hover:border-brand/50 hover:scale-105 transition-[transform,border-color] duration-300" onclick="openLightbox(' + entry.globalIndex + ')" style="transition-delay:' + delay + 'ms">'
             + '<div class="w-full h-full flex flex-col items-center justify-center gap-2 p-4">'
             + '<svg class="w-10 h-10 text-light/20 group-hover:text-brand/60 transition-colors" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">' + icon + '</svg>'
             + '<p class="text-xs text-light/30 group-hover:text-light/60 transition-colors text-center">' + item.category + '</p>'
