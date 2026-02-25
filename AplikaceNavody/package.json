@@ -1,0 +1,16 @@
+{
+  "name": "aplikace-navody",
+  "version": "1.0.0",
+  "description": "Desktop aplikace pro čtení PDF návodů s AI (Claude)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}
