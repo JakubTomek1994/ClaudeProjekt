@@ -1,6 +1,9 @@
 export type Phase = "idea" | "research" | "design" | "prototype" | "testing" | "production" | "done";
 export type ProjectStatus = "active" | "archived" | "completed";
 export type EntryType = "note" | "phase_change" | "node_created" | "node_updated" | "milestone";
+export type TaskStatus = "open" | "in_progress" | "done";
+export type Priority = "low" | "medium" | "high";
+export type EdgeType = "blocks" | "relates_to" | "is_part_of";
 
 export interface Project {
   id: string;
@@ -18,6 +21,9 @@ export interface MapNode {
   label: string;
   description: string | null;
   phase: Phase;
+  status: TaskStatus;
+  priority: Priority;
+  deadline: string | null;
   position_x: number;
   position_y: number;
   parent_node_id: string | null;
@@ -29,6 +35,7 @@ export interface NodeEdge {
   project_id: string;
   source_node_id: string;
   target_node_id: string;
+  edge_type: EdgeType;
   created_at: string;
 }
 
@@ -39,6 +46,8 @@ export interface DiaryEntry {
   entry_type: EntryType;
   content: string;
   next_step: string | null;
+  status: TaskStatus;
+  priority: Priority;
   created_at: string;
 }
 
@@ -49,6 +58,30 @@ export interface Attachment {
   file_path: string;
   file_type: string;
   file_size: number;
+  created_at: string;
+}
+
+export interface Tag {
+  id: string;
+  project_id: string;
+  name: string;
+  color: string;
+  created_at: string;
+}
+
+export interface NodeTag {
+  id: string;
+  node_id: string;
+  tag_id: string;
+  created_at: string;
+}
+
+export interface Subtask {
+  id: string;
+  node_id: string;
+  content: string;
+  is_done: boolean;
+  sort_order: number;
   created_at: string;
 }
 
@@ -83,6 +116,9 @@ export interface Database {
           label: string;
           description?: string | null;
           phase: Phase;
+          status?: TaskStatus;
+          priority?: Priority;
+          deadline?: string | null;
           position_x?: number;
           position_y?: number;
           parent_node_id?: string | null;
@@ -92,6 +128,9 @@ export interface Database {
           label?: string;
           description?: string | null;
           phase?: Phase;
+          status?: TaskStatus;
+          priority?: Priority;
+          deadline?: string | null;
           position_x?: number;
           position_y?: number;
           parent_node_id?: string | null;
@@ -105,11 +144,13 @@ export interface Database {
           project_id: string;
           source_node_id: string;
           target_node_id: string;
+          edge_type?: EdgeType;
           created_at?: string;
         };
         Update: {
           source_node_id?: string;
           target_node_id?: string;
+          edge_type?: EdgeType;
         };
         Relationships: [];
       };
@@ -122,6 +163,8 @@ export interface Database {
           entry_type?: EntryType;
           content: string;
           next_step?: string | null;
+          status?: TaskStatus;
+          priority?: Priority;
           created_at?: string;
         };
         Update: {
@@ -129,6 +172,8 @@ export interface Database {
           entry_type?: EntryType;
           content?: string;
           next_step?: string | null;
+          status?: TaskStatus;
+          priority?: Priority;
         };
         Relationships: [];
       };
@@ -148,6 +193,52 @@ export interface Database {
           file_path?: string;
           file_type?: string;
           file_size?: number;
+        };
+        Relationships: [];
+      };
+      tags: {
+        Row: Tag;
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          color?: string;
+          created_at?: string;
+        };
+        Update: {
+          name?: string;
+          color?: string;
+        };
+        Relationships: [];
+      };
+      node_tags: {
+        Row: NodeTag;
+        Insert: {
+          id?: string;
+          node_id: string;
+          tag_id: string;
+          created_at?: string;
+        };
+        Update: {
+          node_id?: string;
+          tag_id?: string;
+        };
+        Relationships: [];
+      };
+      subtasks: {
+        Row: Subtask;
+        Insert: {
+          id?: string;
+          node_id: string;
+          content: string;
+          is_done?: boolean;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          content?: string;
+          is_done?: boolean;
+          sort_order?: number;
         };
         Relationships: [];
       };
