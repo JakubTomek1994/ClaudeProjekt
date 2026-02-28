@@ -981,7 +981,7 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                     />
                   ) : isOfficeFile(previewAttachment.file_name) ? (
                     <iframe
-                      src={`https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`}
+                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`}
                       title={previewAttachment.file_name}
                       className="h-[calc(90vh-100px)] w-full rounded"
                     />
