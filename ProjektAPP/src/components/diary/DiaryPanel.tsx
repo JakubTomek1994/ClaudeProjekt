@@ -25,9 +25,31 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { NodeTagSelector } from "@/components/tags/NodeTagSelector";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { DiaryEntry, MapNode, Subtask, SubtaskAttachment, TaskStatus, Priority, Tag, NodeTag } from "@/lib/supabase/types";
+
+const OFFICE_EXTENSIONS = [".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp"];
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".ico"];
+const TEXT_EXTENSIONS = [".txt", ".md", ".csv", ".json", ".xml", ".html", ".css", ".js", ".ts", ".log"];
+
+function isOfficeFile(fileName: string): boolean {
+  return OFFICE_EXTENSIONS.some((ext) => fileName.toLowerCase().endsWith(ext));
+}
+
+function isImageFile(fileName: string): boolean {
+  return IMAGE_EXTENSIONS.some((ext) => fileName.toLowerCase().endsWith(ext));
+}
+
+function isTextFile(fileName: string): boolean {
+  return TEXT_EXTENSIONS.some((ext) => fileName.toLowerCase().endsWith(ext));
+}
 
 interface DiaryPanelProps {
   projectId: string;
@@ -56,6 +78,10 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
   const [subtaskAttachments, setSubtaskAttachments] = useState<Map<string, SubtaskAttachment[]>>(new Map());
   const [isUploadingSubtaskFile, setIsUploadingSubtaskFile] = useState(false);
   const [isDraggingSubtaskFile, setIsDraggingSubtaskFile] = useState(false);
+  const [previewAttachment, setPreviewAttachment] = useState<SubtaskAttachment | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTextContent, setPreviewTextContent] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const supabase = createClient();
 
   const loadEntries = useCallback(async () => {
@@ -410,6 +436,47 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
     toast.success("Soubor smazán");
   }, [supabase]);
 
+  const handleOpenSubtaskAttachment = useCallback(async (attachment: SubtaskAttachment) => {
+    setPreviewAttachment(attachment);
+    setPreviewUrl(null);
+    setPreviewTextContent(null);
+    setIsPreviewLoading(true);
+
+    try {
+      if (isTextFile(attachment.file_name)) {
+        const { data, error } = await supabase.storage
+          .from("attachments")
+          .download(attachment.file_path);
+
+        if (error || !data) {
+          toast.error("Nepodařilo se načíst soubor");
+          setPreviewAttachment(null);
+          return;
+        }
+
+        const text = await data.text();
+        setPreviewTextContent(text);
+      } else {
+        const { data, error } = await supabase.storage
+          .from("attachments")
+          .createSignedUrl(attachment.file_path, 3600);
+
+        if (error || !data?.signedUrl) {
+          toast.error("Nepodařilo se vytvořit odkaz na soubor");
+          setPreviewAttachment(null);
+          return;
+        }
+
+        setPreviewUrl(data.signedUrl);
+      }
+    } catch {
+      toast.error("Chyba při načítání náhledu");
+      setPreviewAttachment(null);
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  }, [supabase]);
+
   const handleDownloadSubtaskAttachment = useCallback(async (attachment: SubtaskAttachment) => {
     const { data, error } = await supabase.storage
       .from("attachments")
@@ -733,7 +800,7 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                               <div key={att.id} className="flex items-center gap-2 rounded px-2 py-1 text-xs hover:bg-muted/50">
                                 <iconInfo.Icon className={cn("h-3.5 w-3.5 shrink-0", iconInfo.color)} />
                                 <button
-                                  onClick={() => handleDownloadSubtaskAttachment(att)}
+                                  onClick={() => handleOpenSubtaskAttachment(att)}
                                   className="min-w-0 flex-1 truncate text-left hover:underline"
                                   title={att.file_name}
                                 >
@@ -880,6 +947,57 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
           )}
         </div>
       </div>
+
+      {/* Subtask attachment preview modal */}
+      <Dialog open={!!previewAttachment} onOpenChange={(open) => { if (!open) setPreviewAttachment(null); }}>
+        <DialogContent className="max-h-[90vh] sm:max-w-4xl overflow-hidden p-0">
+          {previewAttachment && (
+            <>
+              <DialogHeader className="flex flex-row items-center justify-between border-b px-4 py-3">
+                <DialogTitle className="truncate text-sm font-medium">
+                  {previewAttachment.file_name}
+                </DialogTitle>
+                <button
+                  onClick={() => handleDownloadSubtaskAttachment(previewAttachment)}
+                  className="mr-8 flex shrink-0 items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
+                >
+                  <DownloadIcon className="h-3.5 w-3.5" />
+                  Stáhnout
+                </button>
+              </DialogHeader>
+              <div className="flex max-h-[calc(90vh-60px)] items-center justify-center overflow-auto p-4">
+                {isPreviewLoading ? (
+                  <p className="text-sm text-muted-foreground">Načítání náhledu...</p>
+                ) : previewTextContent !== null ? (
+                  <pre className="max-h-[calc(90vh-100px)] w-full overflow-auto whitespace-pre-wrap rounded bg-zinc-950 p-4 font-mono text-sm leading-relaxed text-zinc-200">
+                    {previewTextContent}
+                  </pre>
+                ) : previewUrl ? (
+                  isImageFile(previewAttachment.file_name) ? (
+                    <img
+                      src={previewUrl}
+                      alt={previewAttachment.file_name}
+                      className="max-h-[calc(90vh-100px)] w-auto max-w-full rounded object-contain"
+                    />
+                  ) : isOfficeFile(previewAttachment.file_name) ? (
+                    <iframe
+                      src={`https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`}
+                      title={previewAttachment.file_name}
+                      className="h-[calc(90vh-100px)] w-full rounded"
+                    />
+                  ) : (
+                    <iframe
+                      src={previewUrl}
+                      title={previewAttachment.file_name}
+                      className="h-[calc(90vh-100px)] w-full rounded"
+                    />
+                  )
+                ) : null}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -937,6 +1055,14 @@ function ChevronDownSmallIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" />
     </svg>
   );
 }
