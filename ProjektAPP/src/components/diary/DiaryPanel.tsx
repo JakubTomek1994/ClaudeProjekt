@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +56,6 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
   const [subtaskAttachments, setSubtaskAttachments] = useState<Map<string, SubtaskAttachment[]>>(new Map());
   const [isUploadingSubtaskFile, setIsUploadingSubtaskFile] = useState(false);
   const [isDraggingSubtaskFile, setIsDraggingSubtaskFile] = useState(false);
-  const subtaskFileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
   const loadEntries = useCallback(async () => {
@@ -324,50 +323,59 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
       }
 
       setIsUploadingSubtaskFile(true);
-      const safeName = file.name
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9._-]/g, "_");
-      const filePath = `${projectId}/subtasks/${subtaskId}/${Date.now()}-${safeName}`;
+      try {
+        const safeName = file.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+        const filePath = `${projectId}/subtasks/${subtaskId}/${Date.now()}-${safeName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("attachments")
-        .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from("attachments")
+          .upload(filePath, file);
 
-      if (uploadError) {
-        console.error("Storage upload error:", uploadError);
-        toast.error(`Nepodařilo se nahrát "${file.name}": ${uploadError.message}`);
+        if (uploadError) {
+          console.error("Storage upload error:", uploadError);
+          toast.error(`Nepodařilo se nahrát "${file.name}": ${uploadError.message}`);
+          continue;
+        }
+
+        const { data: dbData, error: dbError } = await supabase
+          .from("subtask_attachments")
+          .insert({
+            subtask_id: subtaskId,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type || "application/octet-stream",
+            file_size: file.size,
+          })
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error("DB insert error:", dbError);
+          toast.error(`Nepodařilo se uložit záznam pro "${file.name}": ${dbError.message}`);
+          // Clean up the orphaned storage file
+          await supabase.storage.from("attachments").remove([filePath]);
+          continue;
+        }
+
+        if (dbData) {
+          const att = dbData as SubtaskAttachment;
+          setSubtaskAttachments((prev) => {
+            const next = new Map(prev);
+            const existing = next.get(subtaskId) ?? [];
+            next.set(subtaskId, [...existing, att]);
+            return next;
+          });
+          toast.success(`Soubor "${file.name}" nahrán`);
+        }
+      } catch (err) {
+        console.error("Unexpected upload error:", err);
+        toast.error(`Chyba při nahrávání "${file.name}"`);
+      } finally {
         setIsUploadingSubtaskFile(false);
-        continue;
       }
-
-      const { data: dbData, error: dbError } = await supabase
-        .from("subtask_attachments")
-        .insert({
-          subtask_id: subtaskId,
-          file_name: file.name,
-          file_path: filePath,
-          file_type: file.type || "application/octet-stream",
-          file_size: file.size,
-        })
-        .select()
-        .single();
-
-      if (dbError) {
-        console.error("DB insert error:", dbError);
-        toast.error(`Nepodařilo se uložit záznam pro "${file.name}": ${dbError.message}`);
-      } else if (dbData) {
-        const att = dbData as SubtaskAttachment;
-        setSubtaskAttachments((prev) => {
-          const next = new Map(prev);
-          const existing = next.get(subtaskId) ?? [];
-          next.set(subtaskId, [...existing, att]);
-          return next;
-        });
-        toast.success(`Soubor "${file.name}" nahrán`);
-      }
-
-      setIsUploadingSubtaskFile(false);
     }
   }, [projectId, supabase]);
 
@@ -718,9 +726,12 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                         <div>
                           <label className="mb-1 block text-[10px] font-medium text-muted-foreground">Přílohy</label>
                           <div className="space-y-1">
-                            {attachments.map((att) => (
+                            {attachments.map((att) => {
+                              const iconInfo = getFileIconInfo(att.file_name);
+                              const ext = att.file_name.split(".").pop()?.toUpperCase() ?? "";
+                              return (
                               <div key={att.id} className="flex items-center gap-2 rounded px-2 py-1 text-xs hover:bg-muted/50">
-                                <PaperclipIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                <iconInfo.Icon className={cn("h-3.5 w-3.5 shrink-0", iconInfo.color)} />
                                 <button
                                   onClick={() => handleDownloadSubtaskAttachment(att)}
                                   className="min-w-0 flex-1 truncate text-left hover:underline"
@@ -731,6 +742,11 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                                 <span className="shrink-0 text-[10px] text-muted-foreground">
                                   {formatFileSize(att.file_size)}
                                 </span>
+                                {ext && (
+                                  <span className="shrink-0 rounded bg-muted px-1 py-0.5 text-[9px] font-semibold uppercase text-muted-foreground">
+                                    {ext}
+                                  </span>
+                                )}
                                 <button
                                   onClick={() => handleDeleteSubtaskAttachment(att)}
                                   className="shrink-0 p-0.5 text-muted-foreground hover:text-red-600"
@@ -739,7 +755,8 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                                   <XIcon className="h-3 w-3" />
                                 </button>
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -762,25 +779,29 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                             : "border-muted-foreground/25 hover:border-muted-foreground/50"
                         )}
                       >
+                        <input
+                          id={`subtask-file-${subtask.id}`}
+                          type="file"
+                          multiple
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                              handleSubtaskFileUpload(subtask.id, e.target.files);
+                              e.target.value = "";
+                            }
+                          }}
+                          className="sr-only"
+                        />
                         {isUploadingSubtaskFile ? (
                           <p className="text-[11px] text-muted-foreground">Nahrávám...</p>
                         ) : (
-                          <label className="cursor-pointer text-[11px] text-muted-foreground">
+                          <button
+                            type="button"
+                            onClick={() => document.getElementById(`subtask-file-${subtask.id}`)?.click()}
+                            className="cursor-pointer text-[11px] text-muted-foreground"
+                          >
                             <span>Přetáhněte soubory nebo </span>
                             <span className="font-medium text-primary underline">vyberte</span>
-                            <input
-                              ref={subtaskFileInputRef}
-                              type="file"
-                              multiple
-                              onChange={(e) => {
-                                if (e.target.files && e.target.files.length > 0) {
-                                  handleSubtaskFileUpload(subtask.id, e.target.files);
-                                  e.target.value = "";
-                                }
-                              }}
-                              className="hidden"
-                            />
-                          </label>
+                          </button>
                         )}
                       </div>
                     </div>
@@ -920,10 +941,73 @@ function ChevronDownSmallIcon({ className }: { className?: string }) {
   );
 }
 
-function PaperclipIcon({ className }: { className?: string }) {
+// File type icon helper
+type IconComponent = (props: { className?: string }) => React.JSX.Element;
+
+function getFileIconInfo(fileName: string): { Icon: IconComponent; color: string } {
+  const lower = fileName.toLowerCase();
+
+  if (lower.endsWith(".doc") || lower.endsWith(".docx") || lower.endsWith(".odt"))
+    return { Icon: FileWordIcon, color: "text-blue-500" };
+  if (lower.endsWith(".xls") || lower.endsWith(".xlsx") || lower.endsWith(".csv"))
+    return { Icon: FileSpreadsheetIcon, color: "text-green-500" };
+  if (lower.endsWith(".ppt") || lower.endsWith(".pptx"))
+    return { Icon: FileTextIcon, color: "text-orange-500" };
+  if (lower.endsWith(".pdf"))
+    return { Icon: FileTextIcon, color: "text-red-500" };
+  if ([".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".ico"].some((ext) => lower.endsWith(ext)))
+    return { Icon: FileImageIcon, color: "text-violet-500" };
+  if ([".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"].some((ext) => lower.endsWith(ext)))
+    return { Icon: FileArchiveIcon, color: "text-amber-500" };
+
+  return { Icon: FileGenericIcon, color: "text-muted-foreground" };
+}
+
+// File type SVG icons (lucide-style)
+function FileWordIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M8 13h2l1 3 1-3h2" />
+    </svg>
+  );
+}
+
+function FileSpreadsheetIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M8 13h2" /><path d="M14 13h2" /><path d="M8 17h2" /><path d="M14 17h2" />
+    </svg>
+  );
+}
+
+function FileTextIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 13H8" /><path d="M16 13h-2" /><path d="M10 17H8" />
+    </svg>
+  );
+}
+
+function FileImageIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><circle cx="10" cy="13" r="2" /><path d="m20 17-1.1-1.1a2 2 0 0 0-2.81.01L10 22" />
+    </svg>
+  );
+}
+
+function FileArchiveIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 12v4h4v-4z" /><path d="M10 12h4" />
+    </svg>
+  );
+}
+
+function FileGenericIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" />
     </svg>
   );
 }
