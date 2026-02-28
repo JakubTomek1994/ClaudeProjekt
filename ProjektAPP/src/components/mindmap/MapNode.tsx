@@ -109,13 +109,13 @@ function MapNodeComponent({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`relative rounded-lg border-2 bg-card px-4 py-3 shadow-sm transition-all ${
-        selected ? "ring-2 ring-primary shadow-md" : "hover:shadow-md"
-      } ${nodeData.isBlocked ? "border-red-300 border-dashed" : (phaseConfig?.borderColor ?? "border-gray-200")} ${nodeData.isDimmed ? "opacity-20 pointer-events-none" : ""}`}
+      className={`relative rounded-xl border bg-card px-4 py-3 shadow-sm transition-all ${
+        selected ? "ring-2 ring-primary shadow-md" : "hover:shadow-md hover:ring-2 hover:ring-primary/20"
+      } ${nodeData.isBlocked ? "ring-2 ring-red-300 bg-red-50/30 dark:bg-red-950/20" : (phaseConfig?.borderColor ?? "border-gray-200")} ${nodeData.isDimmed ? "opacity-20 pointer-events-none" : ""}`}
       style={{ minWidth: 180, maxWidth: 220 }}
       onContextMenu={handleContextMenu}
     >
-      <Handle type="target" position={Position.Left} className="!h-3 !w-3 !border-2 !border-white !bg-gray-400" />
+      <Handle type="target" position={Position.Left} className="!h-3 !w-3 !border-2 !border-white !bg-primary/60" />
 
       <div className="mb-1 flex items-center justify-between gap-2">
         {isEditingLabel ? (
@@ -230,7 +230,7 @@ function MapNodeComponent({ data, selected }: NodeProps) {
         </div>
       )}
 
-      <Handle type="source" position={Position.Right} className="!h-3 !w-3 !border-2 !border-white !bg-gray-400" />
+      <Handle type="source" position={Position.Right} className="!h-3 !w-3 !border-2 !border-white !bg-primary/60" />
 
       {isPhaseMenuOpen && (
         <div

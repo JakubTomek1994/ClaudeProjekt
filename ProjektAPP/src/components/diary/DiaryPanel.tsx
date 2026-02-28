@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { DiaryEntryComponent } from "./DiaryEntry";
 import { NewEntryForm } from "./NewEntryForm";
 import { TASK_STATUSES, TASK_STATUS_MAP, PRIORITIES, PRIORITY_MAP, getDeadlineStatus } from "@/lib/constants";
@@ -38,6 +37,14 @@ import type { DiaryEntry, MapNode, Subtask, SubtaskAttachment, TaskStatus, Prior
 const OFFICE_EXTENSIONS = [".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp"];
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".ico"];
 const TEXT_EXTENSIONS = [".txt", ".md", ".csv", ".json", ".xml", ".html", ".css", ".js", ".ts", ".log"];
+
+const TIMELINE_DOT_COLORS: Record<string, string> = {
+  note: "bg-blue-500",
+  phase_change: "bg-purple-500",
+  node_created: "bg-green-500",
+  node_updated: "bg-amber-500",
+  milestone: "bg-red-500",
+};
 
 function isOfficeFile(fileName: string): boolean {
   return OFFICE_EXTENSIONS.some((ext) => fileName.toLowerCase().endsWith(ext));
@@ -82,6 +89,8 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewTextContent, setPreviewTextContent] = useState<string | null>(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [isPropertiesSectionOpen, setIsPropertiesSectionOpen] = useState(true);
+  const [isSubtasksSectionOpen, setIsSubtasksSectionOpen] = useState(true);
   const supabase = createClient();
 
   const loadEntries = useCallback(async () => {
@@ -543,155 +552,195 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
 
   return (
     <div className="flex h-full flex-col border-l bg-background">
-      <div className="flex shrink-0 items-center justify-between border-b px-4 py-2">
-        <h2 className="text-sm font-semibold">
-          {selectedNodeId ? "Deník uzlu" : "Deník projektu"}
-        </h2>
-        {selectedNodeId && (
-          <button
-            onClick={() => onNodeClick?.("")}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            Zobrazit vše
-          </button>
-        )}
-      </div>
+      <div className="shrink-0 space-y-2 p-3">
+        <div className="flex items-center justify-between rounded-lg bg-card/50 px-4 py-3">
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold">
+              {selectedNodeId ? "Deník uzlu" : "Deník projektu"}
+            </h2>
+            {nodeData?.label && (
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">{nodeData.label}</p>
+            )}
+          </div>
+          {selectedNodeId && (
+            <button
+              onClick={() => onNodeClick?.("")}
+              className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Zobrazit vše
+            </button>
+          )}
+        </div>
 
       {nodeData && (
-        <>
-        <div className="flex shrink-0 items-center gap-2 border-b px-4 py-2">
-          <span className="text-xs text-muted-foreground">Stav:</span>
-          {statusConfig && (
-            <Badge
-              variant="secondary"
-              className={`cursor-pointer select-none text-xs ${statusConfig.color} ${statusConfig.bgColor} hover:opacity-80`}
-              onClick={handleCycleStatus}
-              title="Kliknutím změníte stav"
-            >
-              {statusConfig.label}
-            </Badge>
-          )}
-          <span className="text-xs text-muted-foreground">Priorita:</span>
-          {priorityConfig && (
-            <Badge
-              variant="secondary"
-              className={`cursor-pointer select-none text-xs ${priorityConfig.color} ${priorityConfig.bgColor} hover:opacity-80`}
-              onClick={handleCyclePriority}
-              title="Kliknutím změníte prioritu"
-            >
-              {priorityConfig.label}
-            </Badge>
-          )}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={`flex items-center gap-1 text-xs hover:opacity-80 ${deadlineStatus ? deadlineStatus.color : "text-muted-foreground"}`}
-                title="Nastavit termín"
-              >
-                <DeadlineIcon className="h-3 w-3" />
-                {deadlineStatus ? deadlineStatus.label : "Termín"}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={nodeData?.deadline ? new Date(nodeData.deadline + "T00:00:00") : undefined}
-                onSelect={handleSetDeadline}
-                initialFocus
-              />
-              {nodeData?.deadline && (
-                <div className="border-t p-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-full text-xs text-muted-foreground"
-                    onClick={() => handleSetDeadline(undefined)}
+        <div className="rounded-lg bg-card/50 p-3">
+          <button
+            onClick={() => setIsPropertiesSectionOpen((v) => !v)}
+            className="flex w-full items-center justify-between"
+          >
+            <h3 className="text-xs font-semibold">Vlastnosti</h3>
+            {isPropertiesSectionOpen ? (
+              <ChevronDownSmallIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronRightSmallIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+          </button>
+          {isPropertiesSectionOpen && (
+            <div className="mt-2 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">Stav:</span>
+                {statusConfig && (
+                  <Badge
+                    variant="secondary"
+                    className={`cursor-pointer select-none text-xs ${statusConfig.color} ${statusConfig.bgColor} hover:opacity-80`}
+                    onClick={handleCycleStatus}
+                    title="Kliknutím změníte stav"
                   >
-                    Zrušit termín
-                  </Button>
+                    {statusConfig.label}
+                  </Badge>
+                )}
+                <span className="text-xs text-muted-foreground">Priorita:</span>
+                {priorityConfig && (
+                  <Badge
+                    variant="secondary"
+                    className={`cursor-pointer select-none text-xs ${priorityConfig.color} ${priorityConfig.bgColor} hover:opacity-80`}
+                    onClick={handleCyclePriority}
+                    title="Kliknutím změníte prioritu"
+                  >
+                    {priorityConfig.label}
+                  </Badge>
+                )}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className={`flex items-center gap-1 text-xs hover:opacity-80 ${deadlineStatus ? deadlineStatus.color : "text-muted-foreground"}`}
+                      title="Nastavit termín"
+                    >
+                      <DeadlineIcon className="h-3 w-3" />
+                      {deadlineStatus ? deadlineStatus.label : "Termín"}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={nodeData?.deadline ? new Date(nodeData.deadline + "T00:00:00") : undefined}
+                      onSelect={handleSetDeadline}
+                      initialFocus
+                    />
+                    {nodeData?.deadline && (
+                      <div className="border-t p-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-full text-xs text-muted-foreground"
+                          onClick={() => handleSetDeadline(undefined)}
+                        >
+                          Zrušit termín
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+                {selectedNodeId && (
+                  <NodeTagSelector
+                    nodeId={selectedNodeId}
+                    projectId={projectId}
+                    allTags={allTags}
+                    assignedTagIds={assignedTagIds}
+                    onTagsChanged={() => {
+                      loadNodeData();
+                      onTagsChanged?.();
+                    }}
+                  >
+                    <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="Štítky">
+                      <TagSmallIcon className="h-3 w-3" />
+                      Štítky
+                    </button>
+                  </NodeTagSelector>
+                )}
+              </div>
+              {assignedTagIds.length > 0 && allTags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {allTags
+                    .filter((t) => assignedTagIds.includes(t.id))
+                    .map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
+                        style={{ backgroundColor: tag.color }}
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
                 </div>
               )}
-            </PopoverContent>
-          </Popover>
-          {selectedNodeId && (
-            <NodeTagSelector
-              nodeId={selectedNodeId}
-              projectId={projectId}
-              allTags={allTags}
-              assignedTagIds={assignedTagIds}
-              onTagsChanged={() => {
-                loadNodeData();
-                onTagsChanged?.();
-              }}
-            >
-              <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="Štítky">
-                <TagSmallIcon className="h-3 w-3" />
-                Štítky
-              </button>
-            </NodeTagSelector>
-          )}
-        </div>
-        {assignedTagIds.length > 0 && allTags.length > 0 && (
-          <div className="flex shrink-0 flex-wrap gap-1 border-b px-4 py-1.5">
-            {allTags
-              .filter((t) => assignedTagIds.includes(t.id))
-              .map((tag) => (
-                <span
-                  key={tag.id}
-                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-white"
-                  style={{ backgroundColor: tag.color }}
-                >
-                  {tag.name}
-                </span>
-              ))}
-          </div>
-        )}
-        <div className="shrink-0 border-b px-4 py-2">
-          {isEditingDesc ? (
-            <div className="space-y-1">
-              <Textarea
-                value={editDesc}
-                onChange={(e) => setEditDesc(e.target.value)}
-                placeholder="Popis uzlu..."
-                rows={2}
-                className="text-xs"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    setIsEditingDesc(false);
-                  }
-                }}
-              />
-              <div className="flex gap-1">
-                <Button size="sm" className="h-6 text-xs" onClick={handleDescriptionSave}>Uložit</Button>
-                <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => setIsEditingDesc(false)}>Zrušit</Button>
+              <div>
+                {isEditingDesc ? (
+                  <div className="space-y-1">
+                    <Textarea
+                      value={editDesc}
+                      onChange={(e) => setEditDesc(e.target.value)}
+                      placeholder="Popis uzlu..."
+                      rows={2}
+                      className="text-xs"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                          setIsEditingDesc(false);
+                        }
+                      }}
+                    />
+                    <div className="flex gap-1">
+                      <Button size="sm" className="h-6 text-xs" onClick={handleDescriptionSave}>Uložit</Button>
+                      <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => setIsEditingDesc(false)}>Zrušit</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p
+                    className="cursor-pointer text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => { setEditDesc(nodeData?.description ?? ""); setIsEditingDesc(true); }}
+                    title="Kliknutím upravíte popis"
+                  >
+                    {nodeData?.description || "Přidat popis..."}
+                  </p>
+                )}
               </div>
             </div>
-          ) : (
-            <p
-              className="cursor-pointer text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => { setEditDesc(nodeData?.description ?? ""); setIsEditingDesc(true); }}
-              title="Kliknutím upravíte popis"
-            >
-              {nodeData?.description || "Přidat popis..."}
-            </p>
           )}
         </div>
-        </>
       )}
 
       {selectedNodeId && nodeData && (
-        <div className="shrink-0 border-b px-4 py-2">
-          <div className="mb-1.5 flex items-center justify-between">
-            <h3 className="text-xs font-semibold">Kroky</h3>
-            {subtasks.length > 0 && (
-              <span className="text-[10px] text-muted-foreground">
-                {subtasks.filter((s) => s.is_done).length}/{subtasks.length}
-              </span>
+        <div className="rounded-lg bg-card/50 p-3">
+          <button
+            onClick={() => setIsSubtasksSectionOpen((v) => !v)}
+            className="flex w-full items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-semibold">Kroky</h3>
+              {subtasks.length > 0 && (
+                <span className="text-[10px] text-muted-foreground">
+                  {subtasks.filter((s) => s.is_done).length}/{subtasks.length}
+                </span>
+              )}
+            </div>
+            {isSubtasksSectionOpen ? (
+              <ChevronDownSmallIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronRightSmallIcon className="h-3.5 w-3.5 text-muted-foreground" />
             )}
-          </div>
+          </button>
 
-          {subtasks.length > 0 && (
+          {isSubtasksSectionOpen && subtasks.length > 0 && (
+            <div className="mt-1.5 mb-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+              <div
+                className="h-full bg-green-500 transition-all"
+                style={{ width: `${subtasks.length > 0 ? (subtasks.filter((s) => s.is_done).length / subtasks.length) * 100 : 0}%` }}
+              />
+            </div>
+          )}
+
+          {isSubtasksSectionOpen && subtasks.length > 0 && (
             <div className="mb-2 space-y-1">
               {subtasks.map((subtask, index) => {
                 const isExpanded = expandedSubtaskId === subtask.id;
@@ -715,7 +764,7 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                     <Checkbox
                       checked={subtask.is_done}
                       onCheckedChange={() => handleToggleSubtask(subtask)}
-                      className="h-3.5 w-3.5"
+                      className="h-4 w-4"
                     />
                     {editingSubtaskId === subtask.id ? (
                       <Input
@@ -840,7 +889,7 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
                         onDragOver={(e) => { e.preventDefault(); setIsDraggingSubtaskFile(true); }}
                         onDragLeave={() => setIsDraggingSubtaskFile(false)}
                         className={cn(
-                          "flex items-center justify-center rounded border-2 border-dashed p-2 text-center transition-colors",
+                          "flex items-center justify-center rounded-md border-2 border-dashed p-3 text-center transition-colors",
                           isDraggingSubtaskFile
                             ? "border-primary bg-primary/5"
                             : "border-muted-foreground/25 hover:border-muted-foreground/50"
@@ -879,71 +928,92 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
             </div>
           )}
 
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleAddSubtask(); }}
-            className="flex items-center gap-1"
-          >
-            <Input
-              value={newSubtaskContent}
-              onChange={(e) => setNewSubtaskContent(e.target.value)}
-              placeholder="Přidat krok..."
-              className="h-6 flex-1 text-xs"
-            />
-            <Button type="submit" size="sm" variant="ghost" className="h-6 px-2 text-xs" disabled={!newSubtaskContent.trim()}>
-              +
-            </Button>
-          </form>
+          {isSubtasksSectionOpen && (
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleAddSubtask(); }}
+              className="flex items-center gap-1"
+            >
+              <Input
+                value={newSubtaskContent}
+                onChange={(e) => setNewSubtaskContent(e.target.value)}
+                placeholder="Přidat krok..."
+                className="h-6 flex-1 text-xs"
+              />
+              <Button type="submit" size="sm" variant="ghost" className="h-6 px-2 text-xs" disabled={!newSubtaskContent.trim()}>
+                +
+              </Button>
+            </form>
+          )}
         </div>
       )}
 
-      <div className="shrink-0 px-4 py-2">
-        <NewEntryForm onSubmit={handleNewEntry} />
-      </div>
+        <div>
+          <NewEntryForm onSubmit={handleNewEntry} />
+        </div>
 
-      <Separator className="shrink-0" />
-
-      <div className="flex shrink-0 items-center gap-2 border-b px-4 py-1.5">
-        <Input
-          value={diarySearch}
-          onChange={(e) => setDiarySearch(e.target.value)}
-          placeholder="Hledat záznamy..."
-          className="h-7 flex-1 text-xs"
-        />
-        <Select value={entryTypeFilter} onValueChange={setEntryTypeFilter}>
-          <SelectTrigger className="h-7 w-32 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Všechny typy</SelectItem>
-            <SelectItem value="note">Poznámky</SelectItem>
-            <SelectItem value="phase_change">Změny fáze</SelectItem>
-            <SelectItem value="node_created">Vytvořené uzly</SelectItem>
-            <SelectItem value="node_updated">Aktualizace</SelectItem>
-            <SelectItem value="milestone">Milníky</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2 rounded-lg bg-card/50 p-3">
+          <Input
+            value={diarySearch}
+            onChange={(e) => setDiarySearch(e.target.value)}
+            placeholder="Hledat záznamy..."
+            className="h-7 flex-1 text-xs"
+          />
+          <Select value={entryTypeFilter} onValueChange={setEntryTypeFilter}>
+            <SelectTrigger className="h-7 w-32 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Všechny typy</SelectItem>
+              <SelectItem value="note">Poznámky</SelectItem>
+              <SelectItem value="phase_change">Změny fáze</SelectItem>
+              <SelectItem value="node_created">Vytvořené uzly</SelectItem>
+              <SelectItem value="node_updated">Aktualizace</SelectItem>
+              <SelectItem value="milestone">Milníky</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="space-y-3 p-4">
+        <div className="p-4">
           {isLoading ? (
             <p className="text-center text-sm text-muted-foreground">
               Načítání...
             </p>
           ) : filteredEntries.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground">
-              {entries.length === 0 ? "Zatím žádné záznamy." : "Žádné záznamy neodpovídají filtru."}
-            </p>
+            entries.length === 0 ? (
+              <div className="flex flex-col items-center py-8 text-center">
+                <BookEmptyIcon className="mb-2 h-8 w-8 text-muted-foreground/40" />
+                <p className="text-sm font-medium text-muted-foreground">Zatím žádné záznamy</p>
+                <p className="mt-0.5 text-xs text-muted-foreground/70">Přidejte první záznam pomocí formuláře výše.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-8 text-center">
+                <SearchEmptyIcon className="mb-2 h-8 w-8 text-muted-foreground/40" />
+                <p className="text-sm font-medium text-muted-foreground">Žádné záznamy neodpovídají filtru</p>
+                <p className="mt-0.5 text-xs text-muted-foreground/70">Zkuste změnit hledaný výraz nebo typ záznamu.</p>
+              </div>
+            )
           ) : (
-            filteredEntries.map((entry) => (
-              <DiaryEntryComponent
-                key={entry.id}
-                entry={entry}
-                projectId={projectId}
-                onNodeClick={onNodeClick}
-                onEntryUpdated={loadEntries}
-              />
-            ))
+            <div className="relative pl-8">
+              <div className="absolute left-[19px] top-0 bottom-0 w-px bg-border" />
+              <div className="space-y-3">
+                {filteredEntries.map((entry) => (
+                  <div key={entry.id} className="relative">
+                    <div className={cn(
+                      "absolute -left-8 top-3 h-2.5 w-2.5 rounded-full ring-2 ring-background",
+                      TIMELINE_DOT_COLORS[entry.entry_type] ?? "bg-gray-400"
+                    )} />
+                    <DiaryEntryComponent
+                      entry={entry}
+                      projectId={projectId}
+                      onNodeClick={onNodeClick}
+                      onEntryUpdated={loadEntries}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1134,6 +1204,22 @@ function FileGenericIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    </svg>
+  );
+}
+
+function BookEmptyIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
+    </svg>
+  );
+}
+
+function SearchEmptyIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M8 11h6" />
     </svg>
   );
 }

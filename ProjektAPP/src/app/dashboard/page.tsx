@@ -179,8 +179,8 @@ export default function DashboardPage() {
     : projects.filter((p) => p.status === statusFilter);
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Projekty</h1>
           <p className="text-sm text-muted-foreground">
@@ -208,16 +208,19 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Načítání...</p>
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <p className="mb-2 text-muted-foreground">
-            {projects.length === 0 ? "Zatím nemáte žádné projekty." : "Žádné projekty neodpovídají filtru."}
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
+          <div className="mb-3 rounded-full bg-muted p-3">
+            <EmptyIcon className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <p className="mb-1 font-medium text-muted-foreground">
+            {projects.length === 0 ? "Zatím nemáte žádné projekty" : "Žádné projekty neodpovídají filtru"}
           </p>
           {projects.length === 0 && (
-            <p className="text-sm text-muted-foreground">Vytvořte svůj první projekt tlačítkem výše.</p>
+            <p className="text-sm text-muted-foreground/70">Vytvořte svůj první projekt tlačítkem výše.</p>
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
             <ProjectCard
               key={project.id}
@@ -230,5 +233,14 @@ export default function DashboardPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function EmptyIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+      <path d="M12 10v6" /><path d="m9 13 3-3 3 3" />
+    </svg>
   );
 }

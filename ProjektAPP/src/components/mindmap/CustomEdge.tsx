@@ -36,9 +36,11 @@ export function CustomEdge({
   const sourceIsDone = edgeData?.sourceStatus === "done";
 
   // Determine edge color based on type + dependency state
-  let strokeColor = config?.color ?? "#6b7280";
+  let strokeColor = config?.color ?? "#9ca3af";
   if (isBlocking) {
     strokeColor = sourceIsDone ? "#22c55e" : "#ef4444";
+  } else if (edgeType === "relates_to") {
+    strokeColor = "#9ca3af";
   }
 
   const [edgePath, labelX, labelY] = getBezierPath({
@@ -50,16 +52,23 @@ export function CustomEdge({
     targetPosition,
   });
 
+  // Animated dash for active blocking edges
+  const edgeStyle: React.CSSProperties = {
+    stroke: strokeColor,
+    strokeWidth: selected ? 3 : 2,
+    strokeDasharray: isBlocking && !sourceIsDone ? "8 4" : config?.strokeDasharray,
+  };
+
+  if (isBlocking && !sourceIsDone) {
+    edgeStyle.animation = "edge-dash-flow 0.5s linear infinite";
+  }
+
   return (
     <>
       <BaseEdge
         id={id}
         path={edgePath}
-        style={{
-          stroke: strokeColor,
-          strokeWidth: selected ? 3 : 2,
-          strokeDasharray: config?.strokeDasharray,
-        }}
+        style={edgeStyle}
         markerEnd={config?.markerEnd ? `url(#arrow-${edgeType}${isBlocking && sourceIsDone ? "-done" : ""})` : undefined}
       />
 

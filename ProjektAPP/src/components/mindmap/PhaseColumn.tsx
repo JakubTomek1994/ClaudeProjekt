@@ -14,7 +14,7 @@ export function PhaseColumn({ phase, index, onAddNode }: PhaseColumnProps) {
 
   return (
     <div
-      className={`absolute rounded-lg border border-dashed p-2 ${phase.borderColor} ${phase.bgColor} opacity-30`}
+      className={`absolute rounded-lg border p-2 ${phase.borderColor} ${phase.bgColor} opacity-20`}
       style={{
         left: x,
         top: 0,

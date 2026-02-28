@@ -863,10 +863,37 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
       setEdges((eds) =>
         eds.filter((e) => e.source !== nodeId && e.target !== nodeId)
       );
+      setDbEdges((prev) =>
+        prev.filter((e) => e.source_node_id !== nodeId && e.target_node_id !== nodeId)
+      );
       onNodeSelect?.(null);
       toast.success("Uzel smazán");
     },
     [supabase, setNodes, setEdges, onNodeSelect]
+  );
+
+  // Handle Delete key — React Flow removes nodes from state, but we also need to delete from DB
+  const onNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      for (const node of deleted) {
+        supabase
+          .from("map_nodes")
+          .delete()
+          .eq("id", node.id)
+          .then(({ error }) => {
+            if (error) {
+              toast.error("Nepodařilo se smazat uzel z databáze");
+            }
+          });
+
+        // Clean up dbEdges state
+        setDbEdges((prev) =>
+          prev.filter((e) => e.source_node_id !== node.id && e.target_node_id !== node.id)
+        );
+      }
+      onNodeSelect?.(null);
+    },
+    [supabase, onNodeSelect]
   );
 
   // Compute filtered nodes — apply isDimmed
@@ -994,7 +1021,7 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
       </div>
 
       {/* Phase header bar */}
-      <div className="flex shrink-0 gap-0 overflow-x-auto border-b bg-background/80 px-2 py-1 backdrop-blur-sm">
+      <div className="flex shrink-0 gap-1 overflow-x-auto border-b bg-background/80 px-2 py-1.5 backdrop-blur-sm">
         {PHASES.map((phase) => (
           <button
             key={phase.id}
@@ -1002,7 +1029,7 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
               setDefaultPhase(phase.id);
               setIsAddDialogOpen(true);
             }}
-            className={`flex shrink-0 items-center gap-1 rounded px-3 py-1 text-xs font-medium transition-colors ${phase.bgColor} ${phase.color} hover:opacity-80`}
+            className={`flex shrink-0 items-center gap-1 rounded-md px-3 py-1 text-xs font-medium transition-colors ${phase.bgColor} ${phase.color} hover:opacity-80`}
           >
             <PlusIcon className="h-3 w-3" />
             {phase.label}
@@ -1017,6 +1044,7 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodesDelete={onNodesDelete}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
@@ -1024,7 +1052,7 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
           edgeTypes={edgeTypes}
           fitView
           deleteKeyCode="Delete"
-          className="bg-gray-50"
+          className="bg-gray-50/50 dark:bg-gray-950/50"
         >
           <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
           <Controls />

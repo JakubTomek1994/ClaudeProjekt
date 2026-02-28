@@ -60,10 +60,10 @@ export function Sidebar() {
         <Link
           href="/dashboard"
           className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
             pathname === "/dashboard"
-              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-              : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              ? "border-l-2 border-primary bg-sidebar-accent text-sidebar-accent-foreground"
+              : "border-l-2 border-transparent text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           )}
         >
           <LayoutDashboardIcon className="h-4 w-4" />
@@ -86,10 +86,10 @@ export function Sidebar() {
                   key={project.id}
                   href={`/project/${project.id}`}
                   className={cn(
-                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors",
+                    "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors duration-150",
                     currentProjectId === project.id
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      ? "border-l-2 border-primary bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      : "border-l-2 border-transparent text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
                 >
                   <FolderIcon className="h-3.5 w-3.5 shrink-0" />
@@ -116,7 +116,7 @@ export function Sidebar() {
         {userEmail && (
           <div className="flex items-center justify-between gap-2 rounded-md px-3 py-2">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-xs font-semibold text-primary-foreground">
                 {userEmail.charAt(0).toUpperCase()}
               </div>
               <span className="truncate text-xs text-sidebar-foreground/70">{userEmail}</span>

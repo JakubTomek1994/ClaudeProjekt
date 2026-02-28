@@ -61,7 +61,7 @@ export function ProjectCard({ project, onDelete, onArchive, stats }: ProjectCard
   };
 
   return (
-    <Card className="group relative transition-shadow hover:shadow-md">
+    <Card className="group relative shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.01]">
       <Link href={`/project/${project.id}`} className="absolute inset-0 z-0" />
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
@@ -79,7 +79,7 @@ export function ProjectCard({ project, onDelete, onArchive, stats }: ProjectCard
       <CardContent>
         {stats && (stats.open + stats.inProgress + stats.done) > 0 && (
           <div className="mb-3 space-y-1.5">
-            <div className="flex h-2 w-full overflow-hidden rounded-full bg-gray-100">
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
               {stats.done > 0 && (
                 <div
                   className="bg-green-500 transition-all"
@@ -123,7 +123,7 @@ export function ProjectCard({ project, onDelete, onArchive, stats }: ProjectCard
               <Button
                 variant="ghost"
                 size="sm"
-                className="relative z-10 h-8 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                className="relative z-10 h-8 text-xs text-muted-foreground"
                 onClick={() => onArchive(project.id)}
               >
                 {project.status === "archived" ? "Obnovit" : "Archivovat"}
@@ -134,7 +134,7 @@ export function ProjectCard({ project, onDelete, onArchive, stats }: ProjectCard
               <Button
                 variant="ghost"
                 size="sm"
-                className="relative z-10 h-8 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                className="relative z-10 h-8 text-xs text-muted-foreground"
                 disabled={isDeleting}
               >
                 Smazat

@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import { AttachmentPreview } from "./AttachmentPreview";
 import { AttachmentUpload } from "./AttachmentUpload";
 import { createClient } from "@/lib/supabase/client";
@@ -42,6 +41,7 @@ export function DiaryEntryComponent({ entry, projectId, onNodeClick, onEntryUpda
   const [editContent, setEditContent] = useState(entry.content);
   const [editNextStep, setEditNextStep] = useState(entry.next_step ?? "");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadVisible, setIsUploadVisible] = useState(false);
   const supabase = createClient();
 
   const loadAttachments = async () => {
@@ -110,7 +110,7 @@ export function DiaryEntryComponent({ entry, projectId, onNodeClick, onEntryUpda
     <div className="overflow-hidden rounded-lg border bg-card p-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className={`shrink-0 ${ENTRY_TYPE_COLORS[entry.entry_type]}`}>
+          <Badge variant="secondary" className={`shrink-0 text-[10px] px-1.5 py-0 ${ENTRY_TYPE_COLORS[entry.entry_type]}`}>
             {ENTRY_TYPE_LABELS[entry.entry_type]}
           </Badge>
           {entry.node_id && onNodeClick && (
@@ -191,22 +191,33 @@ export function DiaryEntryComponent({ entry, projectId, onNodeClick, onEntryUpda
       )}
 
       {attachments.length > 0 && (
-        <>
-          <Separator className="my-3" />
-          <div className="flex flex-col gap-1">
-            {attachments.map((att) => (
-              <AttachmentPreview key={att.id} attachment={att} onDeleted={loadAttachments} />
-            ))}
-          </div>
-        </>
+        <div className="mt-3 flex flex-col gap-1">
+          {attachments.map((att) => (
+            <AttachmentPreview key={att.id} attachment={att} onDeleted={loadAttachments} />
+          ))}
+        </div>
       )}
 
-      <Separator className="my-3" />
-      <AttachmentUpload
-        diaryEntryId={entry.id}
-        projectId={projectId}
-        onUploaded={loadAttachments}
-      />
+      {isUploadVisible ? (
+        <div className="mt-3">
+          <AttachmentUpload
+            diaryEntryId={entry.id}
+            projectId={projectId}
+            onUploaded={() => {
+              loadAttachments();
+              setIsUploadVisible(false);
+            }}
+          />
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsUploadVisible(true)}
+          className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <PaperclipIcon className="h-3.5 w-3.5" />
+          Připojit soubor
+        </button>
+      )}
     </div>
   );
 }
@@ -223,6 +234,14 @@ function TrashIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  );
+}
+
+function PaperclipIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
   );
 }
