@@ -82,6 +82,17 @@ export interface Subtask {
   content: string;
   is_done: boolean;
   sort_order: number;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface SubtaskAttachment {
+  id: string;
+  subtask_id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  file_size: number;
   created_at: string;
 }
 
@@ -233,12 +244,33 @@ export interface Database {
           content: string;
           is_done?: boolean;
           sort_order?: number;
+          notes?: string | null;
           created_at?: string;
         };
         Update: {
           content?: string;
           is_done?: boolean;
           sort_order?: number;
+          notes?: string | null;
+        };
+        Relationships: [];
+      };
+      subtask_attachments: {
+        Row: SubtaskAttachment;
+        Insert: {
+          id?: string;
+          subtask_id: string;
+          file_name: string;
+          file_path: string;
+          file_type: string;
+          file_size: number;
+          created_at?: string;
+        };
+        Update: {
+          file_name?: string;
+          file_path?: string;
+          file_type?: string;
+          file_size?: number;
         };
         Relationships: [];
       };

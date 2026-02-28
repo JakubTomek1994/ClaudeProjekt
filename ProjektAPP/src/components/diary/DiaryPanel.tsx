@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NodeTagSelector } from "@/components/tags/NodeTagSelector";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { DiaryEntry, MapNode, Subtask, TaskStatus, Priority, Tag, NodeTag } from "@/lib/supabase/types";
+import type { DiaryEntry, MapNode, Subtask, SubtaskAttachment, TaskStatus, Priority, Tag, NodeTag } from "@/lib/supabase/types";
 
 interface DiaryPanelProps {
   projectId: string;
@@ -51,6 +51,12 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
   const [newSubtaskContent, setNewSubtaskContent] = useState("");
   const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
   const [editingSubtaskContent, setEditingSubtaskContent] = useState("");
+  const [expandedSubtaskId, setExpandedSubtaskId] = useState<string | null>(null);
+  const [subtaskNotes, setSubtaskNotes] = useState<Map<string, string>>(new Map());
+  const [subtaskAttachments, setSubtaskAttachments] = useState<Map<string, SubtaskAttachment[]>>(new Map());
+  const [isUploadingSubtaskFile, setIsUploadingSubtaskFile] = useState(false);
+  const [isDraggingSubtaskFile, setIsDraggingSubtaskFile] = useState(false);
+  const subtaskFileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
   const loadEntries = useCallback(async () => {
@@ -80,6 +86,9 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
       setNodeData(null);
       setAssignedTagIds([]);
       setSubtasks([]);
+      setSubtaskNotes(new Map());
+      setSubtaskAttachments(new Map());
+      setExpandedSubtaskId(null);
       return;
     }
 
@@ -91,7 +100,36 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
 
     if (nodeResult.data) setNodeData(nodeResult.data as MapNode);
     if (tagsResult.data) setAssignedTagIds((tagsResult.data as NodeTag[]).map((nt) => nt.tag_id));
-    if (subtasksResult.data) setSubtasks(subtasksResult.data as Subtask[]);
+
+    const loadedSubtasks = (subtasksResult.data ?? []) as Subtask[];
+    setSubtasks(loadedSubtasks);
+
+    // Initialize notes map from loaded subtasks
+    const notesMap = new Map<string, string>();
+    for (const s of loadedSubtasks) {
+      notesMap.set(s.id, s.notes ?? "");
+    }
+    setSubtaskNotes(notesMap);
+
+    // Load attachments for all subtasks in one query
+    if (loadedSubtasks.length > 0) {
+      const subtaskIds = loadedSubtasks.map((s) => s.id);
+      const { data: attachData } = await supabase
+        .from("subtask_attachments")
+        .select("*")
+        .in("subtask_id", subtaskIds)
+        .order("created_at", { ascending: true });
+
+      const attMap = new Map<string, SubtaskAttachment[]>();
+      for (const att of (attachData ?? []) as SubtaskAttachment[]) {
+        const existing = attMap.get(att.subtask_id) ?? [];
+        existing.push(att);
+        attMap.set(att.subtask_id, existing);
+      }
+      setSubtaskAttachments(attMap);
+    } else {
+      setSubtaskAttachments(new Map());
+    }
   }, [selectedNodeId, supabase]);
 
   useEffect(() => {
@@ -255,6 +293,134 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
         supabase.from("subtasks").update({ sort_order: i }).eq("id", s.id)
       )
     );
+  };
+
+  const handleSaveSubtaskNotes = useCallback(async (subtaskId: string) => {
+    const notes = subtaskNotes.get(subtaskId) ?? "";
+    const subtask = subtasks.find((s) => s.id === subtaskId);
+    if (!subtask || notes === (subtask.notes ?? "")) return;
+
+    const { error } = await supabase
+      .from("subtasks")
+      .update({ notes: notes || "" })
+      .eq("id", subtaskId);
+
+    if (error) {
+      toast.error("Nepodařilo se uložit poznámku");
+      return;
+    }
+
+    setSubtasks((prev) => prev.map((s) => s.id === subtaskId ? { ...s, notes } : s));
+  }, [subtaskNotes, subtasks, supabase]);
+
+  const handleSubtaskFileUpload = useCallback(async (subtaskId: string, files: FileList | File[]) => {
+    const MAX_FILE_SIZE = 20 * 1024 * 1024;
+    const fileArray = Array.from(files);
+
+    for (const file of fileArray) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`Soubor "${file.name}" je příliš velký (max 20 MB)`);
+        continue;
+      }
+
+      setIsUploadingSubtaskFile(true);
+      const safeName = file.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9._-]/g, "_");
+      const filePath = `${projectId}/subtasks/${subtaskId}/${Date.now()}-${safeName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("attachments")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error("Storage upload error:", uploadError);
+        toast.error(`Nepodařilo se nahrát "${file.name}": ${uploadError.message}`);
+        setIsUploadingSubtaskFile(false);
+        continue;
+      }
+
+      const { data: dbData, error: dbError } = await supabase
+        .from("subtask_attachments")
+        .insert({
+          subtask_id: subtaskId,
+          file_name: file.name,
+          file_path: filePath,
+          file_type: file.type || "application/octet-stream",
+          file_size: file.size,
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error("DB insert error:", dbError);
+        toast.error(`Nepodařilo se uložit záznam pro "${file.name}": ${dbError.message}`);
+      } else if (dbData) {
+        const att = dbData as SubtaskAttachment;
+        setSubtaskAttachments((prev) => {
+          const next = new Map(prev);
+          const existing = next.get(subtaskId) ?? [];
+          next.set(subtaskId, [...existing, att]);
+          return next;
+        });
+        toast.success(`Soubor "${file.name}" nahrán`);
+      }
+
+      setIsUploadingSubtaskFile(false);
+    }
+  }, [projectId, supabase]);
+
+  const handleDeleteSubtaskAttachment = useCallback(async (attachment: SubtaskAttachment) => {
+    if (!confirm(`Smazat soubor "${attachment.file_name}"?`)) return;
+
+    const { error: storageError } = await supabase.storage
+      .from("attachments")
+      .remove([attachment.file_path]);
+
+    if (storageError) {
+      toast.error("Nepodařilo se smazat soubor z úložiště");
+      return;
+    }
+
+    const { error: dbError } = await supabase
+      .from("subtask_attachments")
+      .delete()
+      .eq("id", attachment.id);
+
+    if (dbError) {
+      toast.error("Nepodařilo se smazat záznam přílohy");
+      return;
+    }
+
+    setSubtaskAttachments((prev) => {
+      const next = new Map(prev);
+      const existing = next.get(attachment.subtask_id) ?? [];
+      next.set(attachment.subtask_id, existing.filter((a) => a.id !== attachment.id));
+      return next;
+    });
+    toast.success("Soubor smazán");
+  }, [supabase]);
+
+  const handleDownloadSubtaskAttachment = useCallback(async (attachment: SubtaskAttachment) => {
+    const { data, error } = await supabase.storage
+      .from("attachments")
+      .download(attachment.file_path);
+
+    if (error || !data) return;
+
+    const url = URL.createObjectURL(data);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = attachment.file_name;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [supabase]);
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const handleDescriptionSave = async () => {
@@ -452,63 +618,176 @@ export function DiaryPanel({ projectId, selectedNodeId, onNodeClick, onNodeDataC
 
           {subtasks.length > 0 && (
             <div className="mb-2 space-y-1">
-              {subtasks.map((subtask, index) => (
-                <div key={subtask.id} className="group flex items-center gap-1.5">
-                  <Checkbox
-                    checked={subtask.is_done}
-                    onCheckedChange={() => handleToggleSubtask(subtask)}
-                    className="h-3.5 w-3.5"
-                  />
-                  {editingSubtaskId === subtask.id ? (
-                    <Input
-                      value={editingSubtaskContent}
-                      onChange={(e) => setEditingSubtaskContent(e.target.value)}
-                      onBlur={() => handleUpdateSubtask(subtask.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleUpdateSubtask(subtask.id);
-                        if (e.key === "Escape") setEditingSubtaskId(null);
-                      }}
-                      className="h-6 flex-1 text-xs"
-                      autoFocus
-                    />
-                  ) : (
-                    <span
-                      className={cn(
-                        "flex-1 cursor-text text-xs",
-                        subtask.is_done && "text-muted-foreground line-through"
+              {subtasks.map((subtask, index) => {
+                const isExpanded = expandedSubtaskId === subtask.id;
+                const attachments = subtaskAttachments.get(subtask.id) ?? [];
+                const hasDetail = (subtask.notes && subtask.notes.length > 0) || attachments.length > 0;
+
+                return (
+                <div key={subtask.id}>
+                  <div className="group flex items-center gap-1.5">
+                    <button
+                      onClick={() => setExpandedSubtaskId(isExpanded ? null : subtask.id)}
+                      className="shrink-0 p-0.5 text-muted-foreground hover:text-foreground"
+                      title={isExpanded ? "Sbalit" : "Rozbalit"}
+                    >
+                      {isExpanded ? (
+                        <ChevronDownSmallIcon className="h-3 w-3" />
+                      ) : (
+                        <ChevronRightSmallIcon className={cn("h-3 w-3", hasDetail && "text-primary")} />
                       )}
-                      onDoubleClick={() => {
-                        setEditingSubtaskId(subtask.id);
-                        setEditingSubtaskContent(subtask.content);
-                      }}
-                    >
-                      {subtask.content}
-                    </span>
-                  )}
-                  <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button
-                      onClick={() => handleMoveSubtask(index, "up")}
-                      className="text-muted-foreground hover:text-foreground p-0.5"
-                      disabled={index === 0}
-                    >
-                      <ChevronUpIcon className="h-3 w-3" />
                     </button>
-                    <button
-                      onClick={() => handleMoveSubtask(index, "down")}
-                      className="text-muted-foreground hover:text-foreground p-0.5"
-                      disabled={index === subtasks.length - 1}
-                    >
-                      <ChevronDownIcon className="h-3 w-3" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSubtask(subtask.id)}
-                      className="text-muted-foreground hover:text-red-600 p-0.5"
-                    >
-                      <XIcon className="h-3 w-3" />
-                    </button>
+                    <Checkbox
+                      checked={subtask.is_done}
+                      onCheckedChange={() => handleToggleSubtask(subtask)}
+                      className="h-3.5 w-3.5"
+                    />
+                    {editingSubtaskId === subtask.id ? (
+                      <Input
+                        value={editingSubtaskContent}
+                        onChange={(e) => setEditingSubtaskContent(e.target.value)}
+                        onBlur={() => handleUpdateSubtask(subtask.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleUpdateSubtask(subtask.id);
+                          if (e.key === "Escape") setEditingSubtaskId(null);
+                        }}
+                        className="h-6 flex-1 text-xs"
+                        autoFocus
+                      />
+                    ) : (
+                      <span
+                        className={cn(
+                          "flex-1 cursor-text text-xs",
+                          subtask.is_done && "text-muted-foreground line-through"
+                        )}
+                        onDoubleClick={() => {
+                          setEditingSubtaskId(subtask.id);
+                          setEditingSubtaskContent(subtask.content);
+                        }}
+                      >
+                        {subtask.content}
+                      </span>
+                    )}
+                    <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        onClick={() => handleMoveSubtask(index, "up")}
+                        className="text-muted-foreground hover:text-foreground p-0.5"
+                        disabled={index === 0}
+                      >
+                        <ChevronUpIcon className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={() => handleMoveSubtask(index, "down")}
+                        className="text-muted-foreground hover:text-foreground p-0.5"
+                        disabled={index === subtasks.length - 1}
+                      >
+                        <ChevronDownIcon className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSubtask(subtask.id)}
+                        className="text-muted-foreground hover:text-red-600 p-0.5"
+                      >
+                        <XIcon className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
+
+                  {isExpanded && (
+                    <div className="ml-5 mt-1 mb-2 rounded-md border bg-muted/30 p-2.5 space-y-2.5">
+                      {/* Notes */}
+                      <div>
+                        <label className="mb-1 block text-[10px] font-medium text-muted-foreground">Poznámky</label>
+                        <Textarea
+                          value={subtaskNotes.get(subtask.id) ?? ""}
+                          onChange={(e) => {
+                            setSubtaskNotes((prev) => {
+                              const next = new Map(prev);
+                              next.set(subtask.id, e.target.value);
+                              return next;
+                            });
+                          }}
+                          onBlur={() => handleSaveSubtaskNotes(subtask.id)}
+                          placeholder="Poznámky ke kroku..."
+                          rows={2}
+                          className="text-xs resize-none"
+                        />
+                      </div>
+
+                      {/* Attachments list */}
+                      {attachments.length > 0 && (
+                        <div>
+                          <label className="mb-1 block text-[10px] font-medium text-muted-foreground">Přílohy</label>
+                          <div className="space-y-1">
+                            {attachments.map((att) => (
+                              <div key={att.id} className="flex items-center gap-2 rounded px-2 py-1 text-xs hover:bg-muted/50">
+                                <PaperclipIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                <button
+                                  onClick={() => handleDownloadSubtaskAttachment(att)}
+                                  className="min-w-0 flex-1 truncate text-left hover:underline"
+                                  title={att.file_name}
+                                >
+                                  {att.file_name}
+                                </button>
+                                <span className="shrink-0 text-[10px] text-muted-foreground">
+                                  {formatFileSize(att.file_size)}
+                                </span>
+                                <button
+                                  onClick={() => handleDeleteSubtaskAttachment(att)}
+                                  className="shrink-0 p-0.5 text-muted-foreground hover:text-red-600"
+                                  title="Smazat soubor"
+                                >
+                                  <XIcon className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Upload area */}
+                      <div
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsDraggingSubtaskFile(false);
+                          if (e.dataTransfer.files.length > 0) {
+                            handleSubtaskFileUpload(subtask.id, e.dataTransfer.files);
+                          }
+                        }}
+                        onDragOver={(e) => { e.preventDefault(); setIsDraggingSubtaskFile(true); }}
+                        onDragLeave={() => setIsDraggingSubtaskFile(false)}
+                        className={cn(
+                          "flex items-center justify-center rounded border-2 border-dashed p-2 text-center transition-colors",
+                          isDraggingSubtaskFile
+                            ? "border-primary bg-primary/5"
+                            : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                        )}
+                      >
+                        {isUploadingSubtaskFile ? (
+                          <p className="text-[11px] text-muted-foreground">Nahrávám...</p>
+                        ) : (
+                          <label className="cursor-pointer text-[11px] text-muted-foreground">
+                            <span>Přetáhněte soubory nebo </span>
+                            <span className="font-medium text-primary underline">vyberte</span>
+                            <input
+                              ref={subtaskFileInputRef}
+                              type="file"
+                              multiple
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files.length > 0) {
+                                  handleSubtaskFileUpload(subtask.id, e.target.files);
+                                  e.target.value = "";
+                                }
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -621,6 +900,30 @@ function XIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function ChevronRightSmallIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+function ChevronDownSmallIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function PaperclipIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
   );
 }
