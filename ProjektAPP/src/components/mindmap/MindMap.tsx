@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -9,6 +9,8 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
+  ReactFlowProvider,
+  useReactFlow,
   type Connection,
   type Node,
   type Edge,
@@ -24,7 +26,7 @@ import { MapNodeType, type MapNodeData } from "./MapNode";
 import { CustomEdge, EdgeMarkerDefs, type CustomEdgeData } from "./CustomEdge";
 import { AddNodeDialog } from "./AddNodeDialog";
 import { EdgeTypeDialog } from "./EdgeTypeDialog";
-import { SearchFilterBar, DEFAULT_FILTERS, type FilterState } from "./SearchFilterBar";
+import { SearchFilterBar, DEFAULT_FILTERS, type FilterState, type SelectedNodeInfo } from "./SearchFilterBar";
 import { Button } from "@/components/ui/button";
 import { getDeadlineStatus } from "@/lib/constants";
 import { toast } from "sonner";
@@ -40,7 +42,15 @@ interface MindMapProps {
   allTags?: Tag[];
 }
 
-export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: MindMapProps) {
+export function MindMap(props: MindMapProps) {
+  return (
+    <ReactFlowProvider>
+      <MindMapInner {...props} />
+    </ReactFlowProvider>
+  );
+}
+
+function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: MindMapProps) {
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<Node>([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([] as Edge[]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -53,7 +63,17 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
   const [pendingConnection, setPendingConnection] = useState<Connection | null>(null);
   const [isEdgeTypeDialogOpen, setIsEdgeTypeDialogOpen] = useState(false);
   const [dbEdges, setDbEdges] = useState<NodeEdge[]>([]);
+  const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const supabase = createClient();
+  const { fitView } = useReactFlow();
+
+  // Stable callback refs — breaks infinite loadData dependency loop
+  const changePhaseRef = useRef<(nodeId: string, newPhase: Phase) => void>(() => {});
+  const cycleStatusRef = useRef<(nodeId: string) => void>(() => {});
+  const cyclePriorityRef = useRef<(nodeId: string) => void>(() => {});
+  const updateLabelRef = useRef<(nodeId: string, newLabel: string) => void>(() => {});
+  const duplicateNodeRef = useRef<(nodeId: string) => void>(() => {});
+  const deleteEdgeRef = useRef<(edgeId: string) => void>(() => {});
 
   // Change node phase
   const handleChangePhase = useCallback(
@@ -257,6 +277,64 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
     [supabase, setNodes]
   );
 
+  // Direct status setter (for toolbar dropdown)
+  const handleSetStatus = useCallback(
+    async (nodeId: string, newStatus: TaskStatus) => {
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.id !== nodeId) return n;
+          const d = n.data as unknown as MapNodeData;
+          return { ...n, data: { ...d, status: newStatus } satisfies MapNodeData };
+        })
+      );
+
+      const { error } = await supabase
+        .from("map_nodes")
+        .update({ status: newStatus })
+        .eq("id", nodeId);
+
+      if (error) {
+        toast.error("Nepodařilo se změnit stav");
+        return;
+      }
+
+      // Update edge visuals
+      setEdges((eds) =>
+        eds.map((e) => {
+          const ed = e.data as unknown as CustomEdgeData | undefined;
+          if (!ed) return e;
+          if (e.source === nodeId) return { ...e, data: { ...ed, sourceStatus: newStatus } };
+          if (e.target === nodeId) return { ...e, data: { ...ed, targetStatus: newStatus } };
+          return e;
+        })
+      );
+    },
+    [supabase, setNodes, setEdges]
+  );
+
+  // Direct priority setter (for toolbar dropdown)
+  const handleSetPriority = useCallback(
+    async (nodeId: string, newPriority: Priority) => {
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.id !== nodeId) return n;
+          const d = n.data as unknown as MapNodeData;
+          return { ...n, data: { ...d, priority: newPriority } satisfies MapNodeData };
+        })
+      );
+
+      const { error } = await supabase
+        .from("map_nodes")
+        .update({ priority: newPriority })
+        .eq("id", nodeId);
+
+      if (error) {
+        toast.error("Nepodařilo se změnit prioritu");
+      }
+    },
+    [supabase, setNodes]
+  );
+
   // Duplicate node
   const handleDuplicateNode = useCallback(
     async (nodeId: string) => {
@@ -312,11 +390,11 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
           isBlocked: false,
           blockedByCount: 0,
           dbId: data.id,
-          onChangePhase: handleChangePhase,
-          onCycleStatus: handleCycleStatus,
-          onCyclePriority: handleCyclePriority,
-          onUpdateLabel: handleUpdateLabel,
-          onDuplicate: undefined,
+          onChangePhase: (id: string, p: Phase) => changePhaseRef.current(id, p),
+          onCycleStatus: (id: string) => cycleStatusRef.current(id),
+          onCyclePriority: (id: string) => cyclePriorityRef.current(id),
+          onUpdateLabel: (id: string, l: string) => updateLabelRef.current(id, l),
+          onDuplicate: (id: string) => duplicateNodeRef.current(id),
         } satisfies MapNodeData,
       };
 
@@ -331,7 +409,7 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
 
       toast.success("Uzel duplikován");
     },
-    [nodes, projectId, supabase, setNodes, handleChangePhase, handleCycleStatus, handleCyclePriority, handleUpdateLabel, nodeTagMap]
+    [nodes, projectId, supabase, setNodes, nodeTagMap]
   );
 
   // Delete an edge
@@ -353,6 +431,14 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
     },
     [supabase, setEdges]
   );
+
+  // Keep refs in sync with latest callbacks
+  changePhaseRef.current = handleChangePhase;
+  cycleStatusRef.current = handleCycleStatus;
+  cyclePriorityRef.current = handleCyclePriority;
+  updateLabelRef.current = handleUpdateLabel;
+  duplicateNodeRef.current = handleDuplicateNode;
+  deleteEdgeRef.current = handleDeleteEdge;
 
   // Load nodes and edges from DB
   const loadData = useCallback(async () => {
@@ -430,11 +516,11 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
         diaryCount: counts[n.id] || 0,
         subtaskProgress: subtaskProgressMap.get(n.id) || null,
         dbId: n.id,
-        onChangePhase: handleChangePhase,
-        onCycleStatus: handleCycleStatus,
-        onCyclePriority: handleCyclePriority,
-        onUpdateLabel: handleUpdateLabel,
-        onDuplicate: handleDuplicateNode,
+        onChangePhase: (id: string, p: Phase) => changePhaseRef.current(id, p),
+        onCycleStatus: (id: string) => cycleStatusRef.current(id),
+        onCyclePriority: (id: string) => cyclePriorityRef.current(id),
+        onUpdateLabel: (id: string, l: string) => updateLabelRef.current(id, l),
+        onDuplicate: (id: string) => duplicateNodeRef.current(id),
       } satisfies MapNodeData,
     }));
 
@@ -481,14 +567,14 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
           edgeType: e.edge_type,
           sourceStatus: statusMap.get(e.source_node_id) ?? "open",
           targetStatus: statusMap.get(e.target_node_id) ?? "open",
-          onDelete: handleDeleteEdge,
+          onDelete: (id: string) => deleteEdgeRef.current(id),
         } satisfies CustomEdgeData,
       }));
       setEdges(rfEdges);
     }
 
     setIsLoading(false);
-  }, [projectId, supabase, setNodes, setEdges, handleChangePhase, handleCycleStatus, handleCyclePriority, handleUpdateLabel, handleDuplicateNode, handleDeleteEdge, allTags]);
+  }, [projectId, supabase, setNodes, setEdges, allTags]);
 
   useEffect(() => {
     loadData();
@@ -517,15 +603,29 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
       setIsEdgeTypeDialogOpen(false);
       if (!pendingConnection?.source || !pendingConnection?.target) return;
 
-      const { data, error } = await supabase.from("node_edges").insert({
+      // Try with edge_type first, fallback without it if column doesn't exist
+      let insertResult = await supabase.from("node_edges").insert({
         project_id: projectId,
         source_node_id: pendingConnection.source,
         target_node_id: pendingConnection.target,
         edge_type: edgeType,
       }).select().single();
 
+      // Fallback: if edge_type column doesn't exist (migration 007 not applied)
+      if (insertResult.error && insertResult.error.message?.includes("edge_type")) {
+        console.warn("edge_type column missing — inserting without it. Run migration 007_add_edge_types.sql.");
+        insertResult = await supabase.from("node_edges").insert({
+          project_id: projectId,
+          source_node_id: pendingConnection.source,
+          target_node_id: pendingConnection.target,
+        }).select().single();
+      }
+
+      const { data, error } = insertResult;
+
       if (error) {
-        toast.error("Nepodařilo se vytvořit spojení");
+        console.error("Edge creation error:", error);
+        toast.error(`Nepodařilo se vytvořit spojení: ${error.message}`);
         setPendingConnection(null);
         return;
       }
@@ -603,9 +703,23 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
       const data = node.data as unknown as MapNodeData;
+      setInternalSelectedId(data.dbId);
       onNodeSelect?.(data.dbId);
     },
     [onNodeSelect]
+  );
+
+  // Clear selection on pane click
+  const onPaneClick = useCallback(() => {
+    setInternalSelectedId(null);
+  }, []);
+
+  // Focus (center) map on a specific node
+  const handleFocusNode = useCallback(
+    (nodeId: string) => {
+      fitView({ nodes: [{ id: nodeId }], duration: 400, padding: 0.5 });
+    },
+    [fitView]
   );
 
   // Handle node position changes (drag) — save position and detect phase changes
@@ -709,11 +823,11 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
           isBlocked: false,
           blockedByCount: 0,
           dbId: data.id,
-          onChangePhase: handleChangePhase,
-          onCycleStatus: handleCycleStatus,
-          onCyclePriority: handleCyclePriority,
-          onUpdateLabel: handleUpdateLabel,
-          onDuplicate: handleDuplicateNode,
+          onChangePhase: (id: string, p: Phase) => changePhaseRef.current(id, p),
+          onCycleStatus: (id: string) => cycleStatusRef.current(id),
+          onCyclePriority: (id: string) => cyclePriorityRef.current(id),
+          onUpdateLabel: (id: string, l: string) => updateLabelRef.current(id, l),
+          onDuplicate: (id: string) => duplicateNodeRef.current(id),
         } satisfies MapNodeData,
       };
 
@@ -729,7 +843,7 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
 
       toast.success("Uzel přidán");
     },
-    [nodes, projectId, supabase, setNodes, handleChangePhase, handleCycleStatus, handleCyclePriority, handleUpdateLabel, handleDuplicateNode]
+    [nodes, projectId, supabase, setNodes]
   );
 
   // Delete node
@@ -835,6 +949,15 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
     });
   }, [nodes, filters, nodeTagMap]);
 
+  // Compute selected node info for the toolbar
+  const selectedNodeInfo = useMemo<SelectedNodeInfo | null>(() => {
+    if (!internalSelectedId) return null;
+    const node = nodes.find((n) => n.id === internalSelectedId);
+    if (!node) return null;
+    const d = node.data as unknown as MapNodeData;
+    return { id: d.dbId, label: d.label, phase: d.phase, status: d.status, priority: d.priority };
+  }, [internalSelectedId, nodes]);
+
   // Background phase columns
   const phaseBackgrounds = useMemo(
     () =>
@@ -857,7 +980,17 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
     <div className="relative flex h-full w-full flex-col">
       {/* Search & Filter bar */}
       <div className="shrink-0">
-        <SearchFilterBar filters={filters} onFiltersChange={setFilters} allTags={allTags} />
+        <SearchFilterBar
+          filters={filters}
+          onFiltersChange={setFilters}
+          allTags={allTags}
+          selectedNode={selectedNodeInfo}
+          onChangePhase={handleChangePhase}
+          onSetStatus={handleSetStatus}
+          onSetPriority={handleSetPriority}
+          onDeleteNode={handleDeleteNode}
+          onFocusNode={handleFocusNode}
+        />
       </div>
 
       {/* Phase header bar */}
@@ -886,6 +1019,7 @@ export function MindMap({ projectId, onNodeSelect, refreshKey, allTags = [] }: M
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
