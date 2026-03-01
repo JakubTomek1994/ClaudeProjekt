@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, use } from "react";
+import { useEffect, useState, useCallback, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { MindMap } from "@/components/mindmap/MindMap";
@@ -27,6 +27,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [isLoading, setIsLoading] = useState(true);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isDiaryOpen, setIsDiaryOpen] = useState(false);
+  const [diaryWidth, setDiaryWidth] = useState(384);
+  const isResizing = useRef(false);
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
@@ -80,11 +82,16 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   }, [id, supabase]);
 
   const loadPhases = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("project_phases")
       .select("*")
       .eq("project_id", id)
       .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error("Load project phases error:", error);
+      return;
+    }
 
     if (data && data.length > 0) {
       setProjectPhases(projectPhasesToConfig(data as ProjectPhase[]));
@@ -141,6 +148,33 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const handleNodeDataChanged = useCallback(() => {
     setMapRefreshKey((k) => k + 1);
   }, []);
+
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    const startX = e.clientX;
+    const startWidth = diaryWidth;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing.current) return;
+      const delta = startX - e.clientX;
+      const newWidth = Math.min(700, Math.max(320, startWidth + delta));
+      setDiaryWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      isResizing.current = false;
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, [diaryWidth]);
 
   if (isLoading || !project) {
     return (
@@ -232,7 +266,17 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 className="fixed inset-0 z-40 bg-black/50 md:hidden"
                 onClick={() => setIsDiaryOpen(false)}
               />
-              <div className="fixed inset-y-0 right-0 z-50 w-[85vw] max-w-96 md:static md:z-auto md:w-96 md:max-w-none h-full overflow-hidden">
+              {/* Resize handle - desktop only */}
+              <div
+                className="hidden md:flex w-1.5 cursor-col-resize items-center justify-center hover:bg-primary/10 active:bg-primary/20 transition-colors"
+                onMouseDown={handleResizeStart}
+              >
+                <div className="h-8 w-0.5 rounded-full bg-border" />
+              </div>
+              <div
+                className="fixed inset-y-0 right-0 z-50 w-[85vw] max-w-96 md:static md:z-auto md:max-w-none h-full overflow-hidden"
+                style={{ width: diaryWidth }}
+              >
                 <DiaryPanel
                   projectId={project.id}
                   selectedNodeId={selectedNodeId}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,7 +49,7 @@ export function PhaseManager({ projectId, isOpen, onClose, onPhasesChanged }: Ph
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editColorIndex, setEditColorIndex] = useState(0);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const loadPhases = useCallback(async () => {
     const { data, error } = await supabase
@@ -59,6 +59,7 @@ export function PhaseManager({ projectId, isOpen, onClose, onPhasesChanged }: Ph
       .order("sort_order", { ascending: true });
 
     if (error) {
+      console.error("Load phases error:", error);
       toast.error("Nepodařilo se načíst fáze");
       return;
     }
@@ -89,6 +90,7 @@ export function PhaseManager({ projectId, isOpen, onClose, onPhasesChanged }: Ph
     });
 
     if (error) {
+      console.error("Insert phase error:", error);
       toast.error("Nepodařilo se přidat fázi");
       return;
     }
@@ -112,6 +114,7 @@ export function PhaseManager({ projectId, isOpen, onClose, onPhasesChanged }: Ph
       .eq("id", phaseId);
 
     if (error) {
+      console.error("Delete phase error:", error);
       toast.error("Nepodařilo se smazat fázi");
       return;
     }
@@ -145,6 +148,7 @@ export function PhaseManager({ projectId, isOpen, onClose, onPhasesChanged }: Ph
       .eq("id", editingId);
 
     if (error) {
+      console.error("Update phase error:", error);
       toast.error("Nepodařilo se upravit fázi");
       return;
     }

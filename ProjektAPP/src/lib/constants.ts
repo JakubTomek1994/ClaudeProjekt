@@ -23,12 +23,23 @@ export const PHASES = DEFAULT_PHASES;
 
 export const PHASE_MAP = new Map(DEFAULT_PHASES.map((p) => [p.id, p]));
 
+/** Map default Czech phase names to the English IDs stored in existing map_nodes */
+const DEFAULT_PHASE_NAME_TO_ID: Record<string, string> = {
+  "Nápad": "idea",
+  "Průzkum": "research",
+  "Návrh": "design",
+  "Prototyp": "prototype",
+  "Testování": "testing",
+  "Výroba": "production",
+  "Hotovo": "done",
+};
+
 /** Convert DB ProjectPhase rows to PhaseConfig array */
 export function projectPhasesToConfig(phases: ProjectPhase[]): PhaseConfig[] {
   return phases
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((p) => ({
-      id: p.name.toLowerCase().replace(/\s+/g, "_"),
+      id: DEFAULT_PHASE_NAME_TO_ID[p.name] ?? p.name.toLowerCase().replace(/\s+/g, "_"),
       label: p.name,
       color: p.color,
       bgColor: p.bg_color,
