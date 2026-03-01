@@ -6,6 +6,13 @@ import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
+function sanitizeFileName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
 interface AttachmentUploadProps {
   diaryEntryId: string;
   projectId: string;
@@ -28,14 +35,16 @@ export function AttachmentUpload({ diaryEntryId, projectId, onUploaded }: Attach
         }
 
         setIsUploading(true);
-        const filePath = `${projectId}/${diaryEntryId}/${Date.now()}-${file.name}`;
+        const safeName = sanitizeFileName(file.name);
+        const filePath = `${projectId}/${diaryEntryId}/${Date.now()}-${safeName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("attachments")
           .upload(filePath, file);
 
         if (uploadError) {
-          toast.error(`Nepodařilo se nahrát "${file.name}"`);
+          console.error("Storage upload error:", uploadError);
+          toast.error(`Nepodařilo se nahrát "${file.name}": ${uploadError.message}`);
           setIsUploading(false);
           continue;
         }
@@ -44,12 +53,15 @@ export function AttachmentUpload({ diaryEntryId, projectId, onUploaded }: Attach
           diary_entry_id: diaryEntryId,
           file_name: file.name,
           file_path: filePath,
-          file_type: file.type,
+          file_type: file.type || "application/octet-stream",
           file_size: file.size,
         });
 
         if (dbError) {
-          toast.error(`Nepodařilo se uložit záznam pro "${file.name}"`);
+          console.error("DB insert error:", dbError);
+          toast.error(`Nepodařilo se uložit záznam pro "${file.name}": ${dbError.message}`);
+        } else {
+          toast.success(`Soubor "${file.name}" nahrán`);
         }
 
         setIsUploading(false);
@@ -102,10 +114,10 @@ export function AttachmentUpload({ diaryEntryId, projectId, onUploaded }: Attach
       }`}
     >
       {isUploading ? (
-        <p className="text-sm text-muted-foreground">Nahravam...</p>
+        <p className="text-sm text-muted-foreground">Nahrávám...</p>
       ) : (
         <label className="cursor-pointer text-sm text-muted-foreground">
-          <span>Pretahnete soubory sem nebo </span>
+          <span>Přetáhněte soubory sem nebo </span>
           <span className="font-medium text-primary underline">vyberte</span>
           <input
             type="file"

@@ -42,11 +42,11 @@ export function AuthForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{isLogin ? "Prihlaseni" : "Registrace"}</CardTitle>
+        <CardTitle>{isLogin ? "Přihlášení" : "Registrace"}</CardTitle>
         <CardDescription>
           {isLogin
-            ? "Prihlaste se ke svemu uctu"
-            : "Vytvorte si novy ucet"}
+            ? "Přihlaste se ke svému účtu"
+            : "Vytvořte si nový účet"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -58,7 +58,7 @@ export function AuthForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="vas@email.cz"
+              placeholder="váš@email.cz"
               required
             />
           </div>
@@ -69,7 +69,7 @@ export function AuthForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Vase heslo"
+              placeholder="Vaše heslo"
               required
               minLength={6}
             />
@@ -79,9 +79,9 @@ export function AuthForm() {
           )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading
-              ? "Nacitani..."
+              ? "Načítání..."
               : isLogin
-              ? "Prihlasit se"
+              ? "Přihlásit se"
               : "Zaregistrovat se"}
           </Button>
           <Button
@@ -94,8 +94,8 @@ export function AuthForm() {
             }}
           >
             {isLogin
-              ? "Nemam ucet — zaregistrovat se"
-              : "Uz mam ucet — prihlasit se"}
+              ? "Nemám účet — zaregistrovat se"
+              : "Už mám účet — přihlásit se"}
           </Button>
         </form>
       </CardContent>
