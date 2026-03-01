@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { PHASES, TASK_STATUSES, PRIORITIES } from "@/lib/constants";
+import { DEFAULT_PHASES, TASK_STATUSES, PRIORITIES, type PhaseConfig } from "@/lib/constants";
 import type { Phase, TaskStatus, Priority, Tag } from "@/lib/supabase/types";
 
 export interface FilterState {
@@ -43,25 +43,36 @@ interface SearchFilterBarProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   allTags: Tag[];
+  phases?: PhaseConfig[];
   selectedNode?: SelectedNodeInfo | null;
   onChangePhase?: (nodeId: string, phase: Phase) => void;
   onSetStatus?: (nodeId: string, status: TaskStatus) => void;
   onSetPriority?: (nodeId: string, priority: Priority) => void;
   onDeleteNode?: (nodeId: string) => void;
   onFocusNode?: (nodeId: string) => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 export function SearchFilterBar({
   filters,
   onFiltersChange,
   allTags,
+  phases: phasesProp,
   selectedNode,
   onChangePhase,
   onSetStatus,
   onSetPriority,
   onDeleteNode,
   onFocusNode,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }: SearchFilterBarProps) {
+  const PHASES = phasesProp ?? DEFAULT_PHASES;
   const [localSearch, setLocalSearch] = useState(filters.searchQuery);
 
   useEffect(() => {
@@ -86,7 +97,7 @@ export function SearchFilterBar({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b bg-background/80 px-3 py-1.5 backdrop-blur-sm">
+    <div className="flex items-center gap-2 overflow-x-auto border-b bg-background/80 px-3 py-1.5 backdrop-blur-sm">
       <div className="relative">
         <SearchIcon className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -181,6 +192,29 @@ export function SearchFilterBar({
         </Button>
       )}
 
+      <div className="flex shrink-0 items-center gap-0.5 border-l pl-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-muted-foreground"
+          onClick={onUndo}
+          disabled={!canUndo}
+          title="Zpět (Ctrl+Z)"
+        >
+          <UndoIcon className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-muted-foreground"
+          onClick={onRedo}
+          disabled={!canRedo}
+          title="Znovu (Ctrl+Shift+Z)"
+        >
+          <RedoIcon className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+
       {selectedNode && (
         <div className="ml-auto flex items-center gap-2 border-l pl-2">
           <PencilIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -269,6 +303,22 @@ function TrashIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  );
+}
+
+function UndoIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M3 7v6h6" /><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
+    </svg>
+  );
+}
+
+function RedoIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M21 7v6h-6" /><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13" />
     </svg>
   );
 }

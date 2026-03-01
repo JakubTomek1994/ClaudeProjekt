@@ -8,7 +8,12 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import type { Project } from "@/lib/supabase/types";
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -48,10 +53,14 @@ export function Sidebar() {
     ? pathname.split("/")[2]
     : null;
 
-  return (
+  const handleNavClick = () => {
+    onClose?.();
+  };
+
+  const sidebarContent = (
     <aside className="flex h-screen w-60 flex-col border-r bg-sidebar text-sidebar-foreground">
       <div className="flex h-14 items-center border-b px-4">
-        <Link href="/dashboard" className="text-lg font-semibold">
+        <Link href="/dashboard" className="text-lg font-semibold" onClick={handleNavClick}>
           ProjektAPP
         </Link>
       </div>
@@ -59,6 +68,7 @@ export function Sidebar() {
       <nav className="flex-1 space-y-1 overflow-y-auto p-2">
         <Link
           href="/dashboard"
+          onClick={handleNavClick}
           className={cn(
             "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
             pathname === "/dashboard"
@@ -85,6 +95,7 @@ export function Sidebar() {
                 <Link
                   key={project.id}
                   href={`/project/${project.id}`}
+                  onClick={handleNavClick}
                   className={cn(
                     "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors duration-150",
                     currentProjectId === project.id
@@ -133,6 +144,33 @@ export function Sidebar() {
       </div>
     </aside>
   );
+
+  // On mobile: overlay with backdrop
+  if (typeof isOpen === "boolean") {
+    return (
+      <>
+        {/* Backdrop */}
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 md:hidden"
+            onClick={onClose}
+          />
+        )}
+        {/* Sidebar — always visible on md+, slide-in overlay on mobile */}
+        <div
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 transition-transform duration-200 md:static md:translate-x-0",
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          {sidebarContent}
+        </div>
+      </>
+    );
+  }
+
+  // Desktop-only usage (no isOpen prop)
+  return <div className="hidden md:block">{sidebarContent}</div>;
 }
 
 function LayoutDashboardIcon({ className }: { className?: string }) {

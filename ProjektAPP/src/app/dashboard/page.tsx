@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { ProjectCard } from "@/components/ProjectCard";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
@@ -11,10 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PHASES, PHASE_COLUMN_WIDTH, PHASE_MAP } from "@/lib/constants";
+import { DEFAULT_PHASES, PHASE_COLUMN_WIDTH } from "@/lib/constants";
 import type { TemplateNode } from "@/lib/templates";
 import type { Project, ProjectStatus } from "@/lib/supabase/types";
 import { toast } from "sonner";
+
+const DashboardCharts = dynamic(
+  () => import("@/components/dashboard/DashboardCharts").then((m) => m.DashboardCharts),
+  { ssr: false }
+);
 
 export interface ProjectStats {
   open: number;
@@ -28,6 +34,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statsMap, setStatsMap] = useState<Record<string, ProjectStats>>({});
+  const [diaryTimeline, setDiaryTimeline] = useState<{ created_at: string }[]>([]);
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">("active");
   const supabase = createClient();
 
@@ -48,7 +55,11 @@ export default function DashboardPage() {
     if (data && data.length > 0) {
       const projectIds = data.map((p: Project) => p.id);
 
-      const [nodesResult, diaryResult] = await Promise.all([
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString();
+
+      const [nodesResult, diaryResult, diaryTimelineResult] = await Promise.all([
         supabase
           .from("map_nodes")
           .select("project_id, status, deadline")
@@ -58,7 +69,17 @@ export default function DashboardPage() {
           .select("project_id, created_at")
           .in("project_id", projectIds)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("diary_entries")
+          .select("created_at")
+          .in("project_id", projectIds)
+          .gte("created_at", thirtyDaysAgoStr)
+          .order("created_at", { ascending: true }),
       ]);
+
+      if (diaryTimelineResult.data) {
+        setDiaryTimeline(diaryTimelineResult.data as { created_at: string }[]);
+      }
 
       const stats: Record<string, ProjectStats> = {};
       const today = new Date();
@@ -118,10 +139,21 @@ export default function DashboardPage() {
       throw error;
     }
 
+    // Insert default phases for the new project
+    const defaultPhaseInserts = DEFAULT_PHASES.map((p, index) => ({
+      project_id: projectData.id,
+      name: p.label,
+      color: p.color,
+      bg_color: p.bgColor,
+      border_color: p.borderColor,
+      sort_order: index,
+    }));
+    await supabase.from("project_phases").insert(defaultPhaseInserts);
+
     if (templateNodes && templateNodes.length > 0) {
       const phaseCounters: Record<string, number> = {};
       const nodeInserts = templateNodes.map((node) => {
-        const phaseIndex = PHASES.findIndex((p) => p.id === node.phase);
+        const phaseIndex = DEFAULT_PHASES.findIndex((p) => p.id === node.phase);
         phaseCounters[node.phase] = (phaseCounters[node.phase] || 0);
         const y = phaseCounters[node.phase] * 120 + 50;
         phaseCounters[node.phase]++;
@@ -179,8 +211,8 @@ export default function DashboardPage() {
     : projects.filter((p) => p.status === statusFilter);
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="p-4 md:p-8">
+      <div className="mb-6 md:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Projekty</h1>
           <p className="text-sm text-muted-foreground">
@@ -202,6 +234,14 @@ export default function DashboardPage() {
           <NewProjectDialog onCreate={handleCreate} />
         </div>
       </div>
+
+      {!isLoading && projects.length > 0 && (
+        <DashboardCharts
+          projects={projects}
+          statsMap={statsMap}
+          diaryEntries={diaryTimeline}
+        />
+      )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">

@@ -1,4 +1,4 @@
-import type { Phase, TaskStatus, Priority, EdgeType } from "@/lib/supabase/types";
+import type { Phase, TaskStatus, Priority, EdgeType, ProjectPhase } from "@/lib/supabase/types";
 
 export interface PhaseConfig {
   id: Phase;
@@ -8,7 +8,7 @@ export interface PhaseConfig {
   borderColor: string;
 }
 
-export const PHASES: PhaseConfig[] = [
+export const DEFAULT_PHASES: PhaseConfig[] = [
   { id: "idea", label: "Nápad", color: "text-amber-700", bgColor: "bg-amber-50", borderColor: "border-amber-200" },
   { id: "research", label: "Průzkum", color: "text-blue-700", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
   { id: "design", label: "Návrh", color: "text-purple-700", bgColor: "bg-purple-50", borderColor: "border-purple-200" },
@@ -18,7 +18,28 @@ export const PHASES: PhaseConfig[] = [
   { id: "done", label: "Hotovo", color: "text-green-700", bgColor: "bg-green-50", borderColor: "border-green-200" },
 ];
 
-export const PHASE_MAP = new Map(PHASES.map((p) => [p.id, p]));
+/** @deprecated Use DEFAULT_PHASES or project-specific phases instead */
+export const PHASES = DEFAULT_PHASES;
+
+export const PHASE_MAP = new Map(DEFAULT_PHASES.map((p) => [p.id, p]));
+
+/** Convert DB ProjectPhase rows to PhaseConfig array */
+export function projectPhasesToConfig(phases: ProjectPhase[]): PhaseConfig[] {
+  return phases
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((p) => ({
+      id: p.name.toLowerCase().replace(/\s+/g, "_"),
+      label: p.name,
+      color: p.color,
+      bgColor: p.bg_color,
+      borderColor: p.border_color,
+    }));
+}
+
+/** Build a PhaseConfig map from ProjectPhase rows */
+export function buildPhaseMap(phases: PhaseConfig[]): Map<string, PhaseConfig> {
+  return new Map(phases.map((p) => [p.id, p]));
+}
 
 export const PHASE_COLUMN_WIDTH = 250;
 export const PHASE_COLUMN_GAP = 20;

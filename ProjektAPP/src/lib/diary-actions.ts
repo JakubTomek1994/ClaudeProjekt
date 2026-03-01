@@ -9,16 +9,18 @@ export async function createPhaseChangeEntry(
   nodeId: string,
   nodeLabel: string,
   fromPhase: Phase,
-  toPhase: Phase
+  toPhase: Phase,
+  fromLabel?: string,
+  toLabel?: string
 ) {
-  const fromLabel = PHASE_MAP.get(fromPhase)?.label ?? fromPhase;
-  const toLabel = PHASE_MAP.get(toPhase)?.label ?? toPhase;
+  const resolvedFromLabel = fromLabel ?? PHASE_MAP.get(fromPhase)?.label ?? fromPhase;
+  const resolvedToLabel = toLabel ?? PHASE_MAP.get(toPhase)?.label ?? toPhase;
 
   return supabase.from("diary_entries").insert({
     project_id: projectId,
     node_id: nodeId,
     entry_type: "phase_change" as const,
-    content: `Uzel "${nodeLabel}" přesunut z fáze "${fromLabel}" do "${toLabel}"`,
+    content: `Uzel "${nodeLabel}" přesunut z fáze "${resolvedFromLabel}" do "${resolvedToLabel}"`,
   });
 }
 
@@ -26,14 +28,15 @@ export async function createNodeCreatedEntry(
   projectId: string,
   nodeId: string,
   nodeLabel: string,
-  phase: Phase
+  phase: Phase,
+  phaseLabel?: string
 ) {
-  const phaseLabel = PHASE_MAP.get(phase)?.label ?? phase;
+  const resolvedLabel = phaseLabel ?? PHASE_MAP.get(phase)?.label ?? phase;
 
   return supabase.from("diary_entries").insert({
     project_id: projectId,
     node_id: nodeId,
     entry_type: "node_created" as const,
-    content: `Vytvořen uzel "${nodeLabel}" ve fázi "${phaseLabel}"`,
+    content: `Vytvořen uzel "${nodeLabel}" ve fázi "${resolvedLabel}"`,
   });
 }

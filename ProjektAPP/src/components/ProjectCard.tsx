@@ -94,7 +94,7 @@ export function ProjectCard({ project, onDelete, onArchive, stats }: ProjectCard
               )}
               {stats.open > 0 && (
                 <div
-                  className="bg-gray-300 transition-all"
+                  className="bg-gray-300 dark:bg-gray-600 transition-all"
                   style={{ width: `${(stats.open / (stats.open + stats.inProgress + stats.done)) * 100}%` }}
                 />
               )}
@@ -102,7 +102,7 @@ export function ProjectCard({ project, onDelete, onArchive, stats }: ProjectCard
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
               <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-green-500" />{stats.done} hotových</span>
               <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-orange-400" />{stats.inProgress} rozpracovaných</span>
-              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-gray-300" />{stats.open} otevřených</span>
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-gray-300 dark:bg-gray-600" />{stats.open} otevřených</span>
             </div>
             {stats.overdue > 0 && (
               <p className="text-xs font-medium text-red-600">{stats.overdue} po termínu</p>

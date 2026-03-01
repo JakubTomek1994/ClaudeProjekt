@@ -21,7 +21,8 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { createClient } from "@/lib/supabase/client";
-import { PHASES, PHASE_COLUMN_WIDTH, PHASE_MAP, TASK_STATUSES, PRIORITIES, EDGE_TYPE_MAP } from "@/lib/constants";
+import { useUndoRedo } from "@/lib/useUndoRedo";
+import { DEFAULT_PHASES, PHASE_COLUMN_WIDTH, TASK_STATUSES, PRIORITIES, EDGE_TYPE_MAP, buildPhaseMap, type PhaseConfig } from "@/lib/constants";
 import { MapNodeType, type MapNodeData } from "./MapNode";
 import { CustomEdge, EdgeMarkerDefs, type CustomEdgeData } from "./CustomEdge";
 import { AddNodeDialog } from "./AddNodeDialog";
@@ -40,6 +41,7 @@ interface MindMapProps {
   onNodeSelect?: (nodeId: string | null) => void;
   refreshKey?: number;
   allTags?: Tag[];
+  phases?: PhaseConfig[];
 }
 
 export function MindMap(props: MindMapProps) {
@@ -50,7 +52,9 @@ export function MindMap(props: MindMapProps) {
   );
 }
 
-function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: MindMapProps) {
+function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [], phases: phasesProp }: MindMapProps) {
+  const PHASES = phasesProp ?? DEFAULT_PHASES;
+  const PHASE_MAP = useMemo(() => buildPhaseMap(PHASES), [PHASES]);
   const [nodes, setNodes, onNodesChangeBase] = useNodesState<Node>([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([] as Edge[]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -66,6 +70,7 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
   const [internalSelectedId, setInternalSelectedId] = useState<string | null>(null);
   const supabase = createClient();
   const { fitView } = useReactFlow();
+  const { pushAction, undo, redo, canUndo, canRedo } = useUndoRedo();
 
   // Stable callback refs — breaks infinite loadData dependency loop
   const changePhaseRef = useRef<(nodeId: string, newPhase: Phase) => void>(() => {});
@@ -78,6 +83,10 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
   // Change node phase
   const handleChangePhase = useCallback(
     async (nodeId: string, newPhase: Phase) => {
+      // Capture old phase before update
+      const currentNode = nodes.find((n) => n.id === nodeId);
+      const oldPhase = currentNode ? (currentNode.data as unknown as MapNodeData).phase : newPhase;
+
       const { error } = await supabase
         .from("map_nodes")
         .update({ phase: newPhase })
@@ -112,8 +121,35 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
         entry_type: "phase_change",
         content: `Fáze uzlu změněna na "${phaseLabel}"`,
       });
+
+      // Push undo action
+      if (oldPhase !== newPhase) {
+        pushAction({
+          description: `Změna fáze na "${phaseLabel}"`,
+          undo: async () => {
+            await supabase.from("map_nodes").update({ phase: oldPhase }).eq("id", nodeId);
+            setNodes((nds) =>
+              nds.map((n) => {
+                if (n.id !== nodeId) return n;
+                const d = n.data as unknown as MapNodeData;
+                return { ...n, data: { ...d, phase: oldPhase } satisfies MapNodeData };
+              })
+            );
+          },
+          redo: async () => {
+            await supabase.from("map_nodes").update({ phase: newPhase }).eq("id", nodeId);
+            setNodes((nds) =>
+              nds.map((n) => {
+                if (n.id !== nodeId) return n;
+                const d = n.data as unknown as MapNodeData;
+                return { ...n, data: { ...d, phase: newPhase } satisfies MapNodeData };
+              })
+            );
+          },
+        });
+      }
     },
-    [supabase, setNodes, projectId]
+    [supabase, setNodes, projectId, nodes, pushAction]
   );
 
   // Cycle node status: open → in_progress → done → open (with dependency check)
@@ -123,6 +159,10 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
       const blockingEdges = dbEdges.filter(
         (e) => e.edge_type === "blocks" && e.target_node_id === nodeId
       );
+
+      // Capture old status before update
+      const currentNodeForUndo = nodes.find((n) => n.id === nodeId);
+      const oldStatus = currentNodeForUndo ? (currentNodeForUndo.data as unknown as MapNodeData).status : "open" as TaskStatus;
 
       if (blockingEdges.length > 0) {
         // Find which source nodes are not done
@@ -213,13 +253,43 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
           })
         );
       }
+
+      // Push undo action for status change
+      const applyStatus = (nId: string, status: TaskStatus) => {
+        supabase.from("map_nodes").update({ status }).eq("id", nId);
+        setNodes((nds) =>
+          nds.map((n) => {
+            if (n.id !== nId) return n;
+            const d = n.data as unknown as MapNodeData;
+            return { ...n, data: { ...d, status } satisfies MapNodeData };
+          })
+        );
+        setEdges((eds) =>
+          eds.map((e) => {
+            const ed = e.data as unknown as CustomEdgeData | undefined;
+            if (!ed) return e;
+            if (e.source === nId) return { ...e, data: { ...ed, sourceStatus: status } };
+            if (e.target === nId) return { ...e, data: { ...ed, targetStatus: status } };
+            return e;
+          })
+        );
+      };
+
+      pushAction({
+        description: `Stav změněn`,
+        undo: async () => applyStatus(nodeId, oldStatus),
+        redo: async () => applyStatus(nodeId, nextStatus),
+      });
     },
-    [supabase, setNodes, setEdges, dbEdges, nodes]
+    [supabase, setNodes, setEdges, dbEdges, nodes, pushAction]
   );
 
   // Update node label
   const handleUpdateLabel = useCallback(
     async (nodeId: string, newLabel: string) => {
+      const currentNode = nodes.find((n) => n.id === nodeId);
+      const oldLabel = currentNode ? (currentNode.data as unknown as MapNodeData).label : "";
+
       const { error } = await supabase
         .from("map_nodes")
         .update({ label: newLabel })
@@ -246,13 +316,39 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
         entry_type: "node_updated",
         content: `Uzel přejmenován na "${newLabel}"`,
       });
+
+      pushAction({
+        description: `Přejmenování uzlu`,
+        undo: async () => {
+          await supabase.from("map_nodes").update({ label: oldLabel }).eq("id", nodeId);
+          setNodes((nds) =>
+            nds.map((n) => {
+              if (n.id !== nodeId) return n;
+              const d = n.data as unknown as MapNodeData;
+              return { ...n, data: { ...d, label: oldLabel } satisfies MapNodeData };
+            })
+          );
+        },
+        redo: async () => {
+          await supabase.from("map_nodes").update({ label: newLabel }).eq("id", nodeId);
+          setNodes((nds) =>
+            nds.map((n) => {
+              if (n.id !== nodeId) return n;
+              const d = n.data as unknown as MapNodeData;
+              return { ...n, data: { ...d, label: newLabel } satisfies MapNodeData };
+            })
+          );
+        },
+      });
     },
-    [supabase, setNodes, projectId]
+    [supabase, setNodes, projectId, nodes, pushAction]
   );
 
   // Cycle node priority: low → medium → high → low
   const handleCyclePriority = useCallback(
     async (nodeId: string) => {
+      const currentNode = nodes.find((n) => n.id === nodeId);
+      const oldPriority = currentNode ? (currentNode.data as unknown as MapNodeData).priority : "medium" as Priority;
       let nextPriority: Priority = "medium";
 
       setNodes((nds) =>
@@ -272,9 +368,35 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
 
       if (error) {
         toast.error("Nepodařilo se změnit prioritu");
+        return;
       }
+
+      const capturedNext = nextPriority;
+      pushAction({
+        description: `Priorita změněna`,
+        undo: async () => {
+          await supabase.from("map_nodes").update({ priority: oldPriority }).eq("id", nodeId);
+          setNodes((nds) =>
+            nds.map((n) => {
+              if (n.id !== nodeId) return n;
+              const d = n.data as unknown as MapNodeData;
+              return { ...n, data: { ...d, priority: oldPriority } satisfies MapNodeData };
+            })
+          );
+        },
+        redo: async () => {
+          await supabase.from("map_nodes").update({ priority: capturedNext }).eq("id", nodeId);
+          setNodes((nds) =>
+            nds.map((n) => {
+              if (n.id !== nodeId) return n;
+              const d = n.data as unknown as MapNodeData;
+              return { ...n, data: { ...d, priority: capturedNext } satisfies MapNodeData };
+            })
+          );
+        },
+      });
     },
-    [supabase, setNodes]
+    [supabase, setNodes, nodes, pushAction]
   );
 
   // Direct status setter (for toolbar dropdown)
@@ -390,6 +512,8 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
           isBlocked: false,
           blockedByCount: 0,
           dbId: data.id,
+          phases: PHASES,
+          phaseMap: PHASE_MAP,
           onChangePhase: (id: string, p: Phase) => changePhaseRef.current(id, p),
           onCycleStatus: (id: string) => cycleStatusRef.current(id),
           onCyclePriority: (id: string) => cyclePriorityRef.current(id),
@@ -409,7 +533,7 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
 
       toast.success("Uzel duplikován");
     },
-    [nodes, projectId, supabase, setNodes, nodeTagMap]
+    [nodes, projectId, supabase, setNodes, nodeTagMap, PHASES, PHASE_MAP]
   );
 
   // Delete an edge
@@ -516,6 +640,8 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
         diaryCount: counts[n.id] || 0,
         subtaskProgress: subtaskProgressMap.get(n.id) || null,
         dbId: n.id,
+        phases: PHASES,
+        phaseMap: PHASE_MAP,
         onChangePhase: (id: string, p: Phase) => changePhaseRef.current(id, p),
         onCycleStatus: (id: string) => cycleStatusRef.current(id),
         onCyclePriority: (id: string) => cyclePriorityRef.current(id),
@@ -823,6 +949,8 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
           isBlocked: false,
           blockedByCount: 0,
           dbId: data.id,
+          phases: PHASES,
+          phaseMap: PHASE_MAP,
           onChangePhase: (id: string, p: Phase) => changePhaseRef.current(id, p),
           onCycleStatus: (id: string) => cycleStatusRef.current(id),
           onCyclePriority: (id: string) => cyclePriorityRef.current(id),
@@ -1011,12 +1139,17 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
           filters={filters}
           onFiltersChange={setFilters}
           allTags={allTags}
+          phases={PHASES}
           selectedNode={selectedNodeInfo}
           onChangePhase={handleChangePhase}
           onSetStatus={handleSetStatus}
           onSetPriority={handleSetPriority}
           onDeleteNode={handleDeleteNode}
           onFocusNode={handleFocusNode}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
         />
       </div>
 
@@ -1081,6 +1214,7 @@ function MindMapInner({ projectId, onNodeSelect, refreshKey, allTags = [] }: Min
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddNode}
         defaultPhase={defaultPhase}
+        phases={PHASES}
       />
 
       <EdgeTypeDialog

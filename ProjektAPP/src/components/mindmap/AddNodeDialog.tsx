@@ -25,7 +25,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { PHASES } from "@/lib/constants";
+import { DEFAULT_PHASES, type PhaseConfig } from "@/lib/constants";
 import type { Phase } from "@/lib/supabase/types";
 
 interface AddNodeDialogProps {
@@ -33,9 +33,11 @@ interface AddNodeDialogProps {
   onClose: () => void;
   onAdd: (label: string, description: string, phase: Phase, deadline: string | null) => void;
   defaultPhase?: Phase;
+  phases?: PhaseConfig[];
 }
 
-export function AddNodeDialog({ isOpen, onClose, onAdd, defaultPhase = "idea" }: AddNodeDialogProps) {
+export function AddNodeDialog({ isOpen, onClose, onAdd, defaultPhase = "idea", phases: phasesProp }: AddNodeDialogProps) {
+  const PHASES = phasesProp ?? DEFAULT_PHASES;
   const [label, setLabel] = useState("");
   const [description, setDescription] = useState("");
   const [phase, setPhase] = useState<Phase>(defaultPhase);

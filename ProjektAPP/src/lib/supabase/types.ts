@@ -1,4 +1,4 @@
-export type Phase = "idea" | "research" | "design" | "prototype" | "testing" | "production" | "done";
+export type Phase = string;
 export type ProjectStatus = "active" | "archived" | "completed";
 export type EntryType = "note" | "phase_change" | "node_created" | "node_updated" | "milestone";
 export type TaskStatus = "open" | "in_progress" | "done";
@@ -93,6 +93,17 @@ export interface SubtaskAttachment {
   file_path: string;
   file_type: string;
   file_size: number;
+  created_at: string;
+}
+
+export interface ProjectPhase {
+  id: string;
+  project_id: string;
+  name: string;
+  color: string;
+  bg_color: string;
+  border_color: string;
+  sort_order: number;
   created_at: string;
 }
 
@@ -271,6 +282,27 @@ export interface Database {
           file_path?: string;
           file_type?: string;
           file_size?: number;
+        };
+        Relationships: [];
+      };
+      project_phases: {
+        Row: ProjectPhase;
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          color?: string;
+          bg_color?: string;
+          border_color?: string;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          name?: string;
+          color?: string;
+          bg_color?: string;
+          border_color?: string;
+          sort_order?: number;
         };
         Relationships: [];
       };

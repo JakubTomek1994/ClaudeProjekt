@@ -3,7 +3,7 @@
 import { memo, useState, useRef, useEffect } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Badge } from "@/components/ui/badge";
-import { PHASE_MAP, PHASES, TASK_STATUS_MAP, PRIORITY_MAP, getDeadlineStatus } from "@/lib/constants";
+import { PHASE_MAP, DEFAULT_PHASES, TASK_STATUS_MAP, PRIORITY_MAP, getDeadlineStatus, type PhaseConfig } from "@/lib/constants";
 import type { Phase, TaskStatus, Priority } from "@/lib/supabase/types";
 
 export interface MapNodeData {
@@ -25,12 +25,16 @@ export interface MapNodeData {
   onCyclePriority?: (nodeId: string) => void;
   onUpdateLabel?: (nodeId: string, newLabel: string) => void;
   onDuplicate?: (nodeId: string) => void;
+  phases?: PhaseConfig[];
+  phaseMap?: Map<string, PhaseConfig>;
   [key: string]: unknown;
 }
 
 function MapNodeComponent({ data, selected }: NodeProps) {
   const nodeData = data as unknown as MapNodeData;
-  const phaseConfig = PHASE_MAP.get(nodeData.phase);
+  const phaseMap = nodeData.phaseMap ?? PHASE_MAP;
+  const phases = nodeData.phases ?? DEFAULT_PHASES;
+  const phaseConfig = phaseMap.get(nodeData.phase);
   const statusConfig = TASK_STATUS_MAP.get(nodeData.status);
   const priorityConfig = PRIORITY_MAP.get(nodeData.priority);
   const deadlineStatus = getDeadlineStatus(nodeData.deadline);
@@ -90,10 +94,10 @@ function MapNodeComponent({ data, selected }: NodeProps) {
     setIsPhaseMenuOpen(true);
   };
 
-  const handlePhaseSelect = (phase: Phase) => {
+  const handlePhaseSelect = (phaseId: Phase) => {
     setIsPhaseMenuOpen(false);
-    if (phase !== nodeData.phase) {
-      nodeData.onChangePhase?.(nodeData.dbId, phase);
+    if (phaseId !== nodeData.phase) {
+      nodeData.onChangePhase?.(nodeData.dbId, phaseId);
     }
   };
 
@@ -214,7 +218,7 @@ function MapNodeComponent({ data, selected }: NodeProps) {
           <div className="flex items-center justify-between text-[9px] text-muted-foreground mb-0.5">
             <span>{nodeData.subtaskProgress.done}/{nodeData.subtaskProgress.total} kroků</span>
           </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-gray-200">
+          <div className="h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
             <div
               className="h-full rounded-full bg-green-500 transition-all"
               style={{ width: `${(nodeData.subtaskProgress.done / nodeData.subtaskProgress.total) * 100}%` }}
@@ -238,11 +242,11 @@ function MapNodeComponent({ data, selected }: NodeProps) {
           className="absolute left-0 top-full z-50 mt-1 min-w-[160px] rounded-md border bg-card py-1 shadow-lg"
         >
           <p className="px-3 py-1 text-xs font-medium text-muted-foreground">Změnit fázi</p>
-          {PHASES.map((phase) => (
+          {phases.map((phase) => (
             <button
               key={phase.id}
               onClick={() => handlePhaseSelect(phase.id)}
-              className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-gray-100 ${
+              className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 ${
                 phase.id === nodeData.phase ? "font-semibold" : ""
               }`}
             >
@@ -256,7 +260,7 @@ function MapNodeComponent({ data, selected }: NodeProps) {
               setIsPhaseMenuOpen(false);
               nodeData.onDuplicate?.(nodeData.dbId);
             }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-gray-100"
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <CopyIcon className="h-3 w-3" />
             <span>Duplikovat</span>
