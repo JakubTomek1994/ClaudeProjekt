@@ -3,11 +3,77 @@
 > Continuation guide. Načti tenhle soubor na začátku další session a budeš mít kontext.
 
 **Datum poslední session:** 2026-05-08
-**Stav:** Fáze 1 (MVP) — Kroky **1.1 – 1.10 hotové**, MVP kompletní, dev server běží.
+**Stav:** Fáze 1 (MVP) — Kroky **1.1 – 1.10 hotové**, kód připraven na deploy (Postgres + Vercel Blob).
 
 ---
 
-## Jak pokračovat — krok-za-krokem
+## Deploy na Vercel — krok-za-krokem (2026-05-08)
+
+Po migraci ze SQLite na Postgres + lokálního FS na Vercel Blob aktuálně **dev server bez nastavené `DATABASE_URL` selže.** Setup:
+
+### 1. Neon Postgres
+1. https://neon.tech → Sign up (GitHub).
+2. Create project → region **Frankfurt (eu-central-1)**.
+3. **Database** → zkopíruj `DATABASE_URL` (pooled connection string s `sslmode=require`).
+4. Vytvoř druhou DB / branch pro local dev (např. `dev`) — odlišný connection string.
+
+### 2. Lokální .env
+Doplň `.env`:
+```bash
+DATABASE_URL="postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/dev?sslmode=require"
+BLOB_READ_WRITE_TOKEN=""   # nech prázdný do bodu 4
+```
+
+### 3. Migrace + seed
+```bash
+npx prisma migrate dev --name init    # vygeneruje prisma/migrations/init/migration.sql
+npm run db:seed                       # 14 defect types, admin, demo customer, 11 templates
+npm run dev                           # http://localhost:3030
+```
+
+### 4. Vercel Blob token
+1. https://vercel.com → New Project → Import `JakubTomek1994/ClaudeProjekt`.
+2. **Root Directory** = `ProjektReklamace`.
+3. **Storage** tab → Create → **Blob** → vybrat region.
+4. Ze záložky `.env.local` zkopíruj `BLOB_READ_WRITE_TOKEN` → vlož do lokálního `.env` i do Vercel Project ENV.
+
+### 5. Vercel Project ENV (Settings → Environment Variables)
+Production:
+```
+DATABASE_URL          # Neon main (pooled)
+AUTH_SECRET           # vygeneruj: openssl rand -base64 32
+AUTH_URL              # https://<tvoje-doména>.vercel.app
+CRON_SECRET           # vygeneruj: openssl rand -hex 32
+BLOB_READ_WRITE_TOKEN # z bodu 4
+APP_URL               # stejné jako AUTH_URL
+COMPANY_NAME          # ze SHRNUTI / vlastní
+COMPANY_ICO
+COMPANY_DIC
+COMPANY_STREET
+COMPANY_CITY
+COMPANY_ZIP
+COMPANY_PHONE
+COMPANY_EMAIL
+```
+**NESET** `AUTH_TRUST_HOST` na produkci (jen pro dev).
+
+### 6. Deploy
+- První deploy proběhne automaticky po importu (build za ~2 min).
+- Pak `git push` na main = redeploy.
+- **Cron** se aktivuje sám díky `vercel.json` (`0 7 * * *` UTC).
+- Login `admin@firma.cz` / `admin123` (změň heslo přes seed nebo Prisma Studio).
+
+### 7. Smoke test
+- `/auth/login` → přihlásit
+- `/import` → nahrát `sample-data/zakaznici-sample.csv` + `objednavky-sample.csv`
+- `/cases/new` → vytvořit reklamaci, uploadnout dokument (test Blob)
+- `/api/cases/{id}/pdf/claim_protocol` → test PDF s diakritikou
+- Vercel dashboard → Crons → "Run now" → ověř `/api/cron/check-deadlines`
+- Bell v topbaru → načítají se notifikace
+
+---
+
+## Jak pokračovat lokálně po deploy
 
 ```bash
 cd C:\Users\Jakub\Desktop\ClaudeProjekt\ProjektReklamace
@@ -62,13 +128,13 @@ Detaily v `REKLAMACNI_APP_SPEC.md` sekce 5–6.
 ## Důležité technické pozn.
 
 ### Prisma 7 — driver adapter
-Prisma 7 už nemá nativní engine — vyžaduje **driver adapter**:
+Prisma 7 už nemá nativní engine — vyžaduje **driver adapter**. Nyní `@prisma/adapter-pg`:
 ```ts
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL });
+import { PrismaPg } from "@prisma/adapter-pg";
+const adapter = new PrismaPg(process.env.DATABASE_URL);
 new PrismaClient({ adapter, log: ["error"] });
 ```
-Pro Postgres (později) → `@prisma/adapter-pg`. Generated client je ve `src/generated/prisma/client.ts`, import ho **odtamtud** ne z `@prisma/client`.
+Generated client je ve `src/generated/prisma/client.ts`, import ho **odtamtud** ne z `@prisma/client`.
 
 ### shadcn/ui s Base UI (ne Radix)
 Aktuální shadcn registry instaluje komponenty s `@base-ui/react`. Místo `asChild` používá **`render` prop**:
@@ -87,10 +153,12 @@ Middleware je deprecated. Soubor je v `src/proxy.ts`.
 ### PDF — Source Sans 3 TTF nutné
 Defaultní Helvetica nemá českou diakritiku. TTF v `src/lib/pdf/fonts/`, registrace v `src/lib/pdf/fonts.ts:ensureFontsRegistered()`. Hyphenation disabled (default heuristika rozbíjí Czech).
 
-### Storage cest
-- `public/uploads/cases/{caseId}/{nanoid12}.{ext}` — sanitizovaná cesta
-- Path traversal ochrana v `deleteStoredFile`
-- Pro produkci na Vercelu nahradit za S3 (Vercel filesystem je read-only)
+### Storage (Vercel Blob)
+- `src/lib/storage/local.ts` (název zachovaný kvůli importům, fakticky Vercel Blob).
+- Klíč v Blobu: `cases/{caseId}/{nanoid12}.{ext}` (`addRandomSuffix: false`, abychom měli plnou kontrolu).
+- DB sloupec `Document.storagePath` = celá Blob URL (`https://...public.blob.vercel-storage.com/...`).
+- Smazání: `del(url)` — `BlobNotFoundError` se polkne, idempotentní.
+- Vyžaduje `BLOB_READ_WRITE_TOKEN` v ENV (lokálně i na Vercelu — automaticky při Storage → Blob create).
 
 ### Statistiky (Krok 1.10)
 - `src/lib/stats/queries.ts` — server-only agregační helpery (`getStats(filter)`).
@@ -114,14 +182,17 @@ Defaultní Helvetica nemá českou diakritiku. TTF v `src/lib/pdf/fonts/`, regis
 
 ```bash
 # Auth
-AUTH_SECRET="..."          # vygenerovaný node crypto
-AUTH_TRUST_HOST=true       # žádný AUTH_URL pro dev
+AUTH_SECRET="..."          # openssl rand -base64 32
+AUTH_TRUST_HOST=true       # jen dev — na produkci odstraň, nastav AUTH_URL
 
 # Cron (Krok 1.9)
-CRON_SECRET="..."          # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+CRON_SECRET="..."          # openssl rand -hex 32
 
-# DB
-DATABASE_URL="file:./prisma/dev.db"
+# DB (Neon Postgres)
+DATABASE_URL="postgresql://user:pass@host/db?sslmode=require"
+
+# Storage (Vercel Blob)
+BLOB_READ_WRITE_TOKEN="vercel_blob_rw_..."
 
 # Firma (pro PDF protokoly) — volitelné, mají defaults
 COMPANY_NAME="..."
@@ -174,7 +245,8 @@ Naimportuj přes **`/import`** stránku.
 
 ## Co rozhodně **nedělat**
 
-- **Neměň `prisma/schema.prisma` `provider = "prisma-client"`** — generuje TS soubory, ne JS modul. Pokud bys změnil na `prisma-client-js`, rozbije se import z `@/generated/prisma/client`.
+- **Neměň `prisma/schema.prisma` `provider = "prisma-client"`** v `generator` bloku — generuje TS soubory, ne JS modul. Pokud bys změnil na `prisma-client-js`, rozbije se import z `@/generated/prisma/client`. (Datasource provider je jiná věc — ten je `postgresql`.)
+- **Necommitni `.env`** — jsou tam živé secrets (DATABASE_URL, BLOB_READ_WRITE_TOKEN, AUTH_SECRET, CRON_SECRET).
 - **Neinstaluj nový dev server bez killování starého** — dev visel na 3030 i po `npm run dev` nový — vždycky `netstat -ano | grep ":3030"` + `taskkill //PID X //F`.
 - **Neměň `--font-sans` na `Inter`** — skill explicitně vyžaduje vyhnout se generic AI fontům. Source Sans 3 je distinct.
 

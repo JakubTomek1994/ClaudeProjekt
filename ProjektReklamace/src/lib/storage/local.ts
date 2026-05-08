@@ -1,10 +1,8 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
+// Vercel Blob storage. Path naming kept (`local.ts`) for backwards-compat
+// with existing imports — file no longer touches the local filesystem.
+import { del, put } from "@vercel/blob";
 import { nanoid } from "nanoid";
-
-const PUBLIC_ROOT = path.join(process.cwd(), "public");
-export const UPLOADS_PUBLIC_PREFIX = "/uploads";
-const UPLOADS_DIR = path.join(PUBLIC_ROOT, "uploads");
+import path from "node:path";
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -31,7 +29,7 @@ function sanitizeExtension(filename: string): string {
 
 export type SavedFile = {
   filename: string;
-  storagePath: string; // public path under /uploads
+  storagePath: string; // Vercel Blob URL (https://...public.blob.vercel-storage.com/...)
   mimeType: string;
   size: number;
 };
@@ -49,41 +47,30 @@ export async function saveCaseFile(caseId: string, file: File): Promise<SavedFil
     throw new Error(`Soubor je větší než ${MAX_FILE_BYTES / 1024 / 1024} MB.`);
   }
 
-  const caseDir = path.join(UPLOADS_DIR, "cases", caseId);
-  await mkdir(caseDir, { recursive: true });
-
   const ext = sanitizeExtension(file.name);
-  const storedFilename = `${nanoid(12)}${ext}`;
-  const filePath = path.join(caseDir, storedFilename);
+  const blobPath = `cases/${caseId}/${nanoid(12)}${ext}`;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buffer);
-
-  const storagePath = `${UPLOADS_PUBLIC_PREFIX}/cases/${caseId}/${storedFilename}`;
+  const blob = await put(blobPath, file, {
+    access: "public",
+    contentType: file.type,
+    addRandomSuffix: false,
+  });
 
   return {
     filename: file.name,
-    storagePath,
+    storagePath: blob.url,
     mimeType: file.type,
     size: file.size,
   };
 }
 
 export async function deleteStoredFile(storagePath: string): Promise<void> {
-  if (!storagePath.startsWith(`${UPLOADS_PUBLIC_PREFIX}/`)) {
-    throw new Error("Neplatná cesta k souboru.");
-  }
-  const relative = storagePath.replace(`${UPLOADS_PUBLIC_PREFIX}/`, "");
-  const fullPath = path.join(UPLOADS_DIR, relative);
-  // Defense: ensure resolved path stays inside UPLOADS_DIR
-  const resolved = path.resolve(fullPath);
-  if (!resolved.startsWith(path.resolve(UPLOADS_DIR))) {
-    throw new Error("Path traversal detected.");
-  }
+  if (!storagePath) return;
   try {
-    await unlink(resolved);
+    await del(storagePath);
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === "ENOENT") return;
+    const name = (e as { name?: string } | null)?.name;
+    if (name === "BlobNotFoundError") return;
     throw e;
   }
 }
