@@ -1,0 +1,412 @@
+// Reklamační aplikace — Prisma schema
+// Specifikace: REKLAMACNI_APP_SPEC.md sekce 3
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// === Uživatelé aplikace (interní) ===
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(OPERATOR)
+  createdAt DateTime @default(now())
+
+  cases          Case[]          @relation("CaseAssignee")
+  caseEvents     CaseEvent[]
+  communications Communication[]
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+}
+
+// === Zákazníci ===
+model Customer {
+  id        String  @id @default(cuid())
+  email     String  @unique
+  name      String?
+  phone     String?
+  street    String?
+  city      String?
+  zip       String?
+  country   String? @default("CZ")
+  ico       String?
+  dic       String?
+  isCompany Boolean @default(false)
+  notes     String?
+  tags      String?
+
+  source    CustomerSource @default(MANUAL)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  cases  Case[]
+  orders Order[]
+
+  @@index([email])
+}
+
+enum CustomerSource {
+  MANUAL
+  EMAIL
+  CSV_IMPORT
+  CASE_CREATION
+}
+
+// === Objednávky (z CSV importu) ===
+model Order {
+  id            String   @id @default(cuid())
+  shoptetNumber String   @unique
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+
+  orderDate      DateTime
+  totalAmount    Decimal
+  currency       String   @default("CZK")
+  paymentMethod  String?
+  shippingMethod String?
+  status         String?
+
+  items OrderItem[]
+  cases Case[]
+
+  importedAt DateTime @default(now())
+
+  @@index([customerId])
+  @@index([orderDate])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  sku       String?
+  name      String
+  quantity  Int
+  unitPrice Decimal
+
+  caseItems CaseItem[]
+
+  @@index([orderId])
+}
+
+// === Případy (reklamace + odstoupení) ===
+model Case {
+  id         String     @id @default(cuid())
+  caseNumber String     @unique
+  type       CaseType
+  status     CaseStatus
+  isDraft    Boolean    @default(false)
+
+  source CaseSource
+
+  receivedAt DateTime
+  deadlineAt DateTime
+  decidedAt  DateTime?
+  resolvedAt DateTime?
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  orderId    String?
+  order      Order?   @relation(fields: [orderId], references: [id])
+  assigneeId String?
+  assignee   User?    @relation("CaseAssignee", fields: [assigneeId], references: [id])
+
+  description   String?
+  internalNotes String?
+
+  resolution     Resolution?
+  resolutionNote String?
+  refundAmount   Decimal?
+  refundedAt     DateTime?
+
+  tags String?
+
+  items          CaseItem[]
+  communications Communication[]
+  documents      Document[]
+  events         CaseEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([caseNumber])
+  @@index([status])
+  @@index([deadlineAt])
+  @@index([customerId])
+  @@index([type, status])
+}
+
+enum CaseType {
+  REKLAMACE
+  ODSTOUPENI
+}
+
+enum CaseSource {
+  EMAIL
+  WEB_FORM
+  PHONE
+  IN_PERSON
+  MANUAL
+}
+
+enum CaseStatus {
+  NEW
+  UNDER_REVIEW
+  WITH_SUPPLIER
+  WAITING_CUSTOMER
+  DECIDED
+  WAITING_RETURN
+  GOODS_RECEIVED
+  REFUND_PENDING
+  RESOLVED
+  CLOSED
+  REJECTED
+  CANCELLED
+}
+
+enum Resolution {
+  REPAIR
+  REPLACEMENT
+  DISCOUNT
+  REFUND
+  REJECTED
+  PARTIAL
+}
+
+// === Položky případu (jeden případ = více produktů) ===
+model CaseItem {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  orderItemId String?
+  orderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
+
+  productName String
+  productSku  String?
+  quantity    Int     @default(1)
+  unitPrice   Decimal?
+
+  defectType String?
+  defectDesc String?
+  supplier   String?
+
+  itemStatus     CaseItemStatus @default(PENDING)
+  itemResolution Resolution?
+
+  @@index([caseId])
+}
+
+enum CaseItemStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PARTIAL
+}
+
+// === Komunikace (deník případu) ===
+model Communication {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  direction Direction
+  channel   Channel
+
+  emailMessageId String?
+  emailFrom      String?
+  emailTo        String?
+  emailSubject   String?
+  emailHtml      String?
+  emailText      String?
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+  noteText String?
+
+  attachments Attachment[]
+
+  isAutomated  Boolean @default(false)
+  templateUsed String?
+
+  occurredAt DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([caseId])
+  @@index([emailMessageId])
+}
+
+enum Direction {
+  INCOMING
+  OUTGOING
+  INTERNAL
+}
+
+enum Channel {
+  EMAIL
+  PHONE
+  IN_PERSON
+  WRITTEN
+  WEB_FORM
+  INTERNAL_NOTE
+}
+
+// === Dokumenty ===
+model Document {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  type        DocumentType
+  filename    String
+  mimeType    String
+  size        Int
+  storagePath String
+
+  uploadedBy String?
+  uploadedAt DateTime @default(now())
+  notes      String?
+
+  @@index([caseId])
+}
+
+enum DocumentType {
+  PHOTO_DEFECT
+  INVOICE
+  DELIVERY_NOTE
+  CLAIM_PROTOCOL
+  RESOLUTION_PROTOCOL
+  WITHDRAWAL_FORM
+  SERVICE_REPORT
+  CREDIT_NOTE
+  SHIPPING_LABEL
+  OTHER
+}
+
+// === Přílohy emailů a komunikací ===
+model Attachment {
+  id              String        @id @default(cuid())
+  communicationId String
+  communication   Communication @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+
+  filename    String
+  mimeType    String
+  size        Int
+  storagePath String
+
+  createdAt DateTime @default(now())
+
+  @@index([communicationId])
+}
+
+// === Audit log případu ===
+model CaseEvent {
+  id     String @id @default(cuid())
+  caseId String
+  case   Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  eventType String
+  fromValue String?
+  toValue   String?
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+
+  metadata   String?
+  occurredAt DateTime @default(now())
+
+  @@index([caseId])
+  @@index([eventType])
+}
+
+// === Číselníky ===
+model DefectType {
+  id       String  @id @default(cuid())
+  code     String  @unique
+  name     String
+  category String?
+  active   Boolean @default(true)
+  order    Int     @default(0)
+}
+
+model EmailTemplate {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  name      String
+  caseType  CaseType?
+  subject   String
+  bodyHtml  String
+  bodyText  String
+  attachPdf String?
+  autoSend  Boolean   @default(false)
+  active    Boolean   @default(true)
+
+  updatedAt DateTime @updatedAt
+}
+
+// === Notifikace ===
+model Notification {
+  id     String  @id @default(cuid())
+  userId String?
+  caseId String?
+
+  type    NotificationType
+  title   String
+  message String
+
+  channel String
+
+  readAt    DateTime?
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+enum NotificationType {
+  DEADLINE_WARNING_7D
+  DEADLINE_WARNING_3D
+  DEADLINE_TODAY
+  DEADLINE_PASSED
+  STAGNANT_CASE
+  NEW_CASE_DRAFT
+  CUSTOMER_REPLIED
+  CASE_ASSIGNED
+}
+
+// === Email pairing fronta ===
+model UnpairedEmail {
+  id String @id @default(cuid())
+
+  graphMessageId String   @unique
+  emailFrom      String
+  emailSubject   String
+  emailDate      DateTime
+  emailHtml      String?
+  emailText      String?
+
+  attempts Int            @default(0)
+  status   UnpairedStatus @default(PENDING)
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+  resolution String?
+}
+
+enum UnpairedStatus {
+  PENDING
+  AUTO_PAIRED
+  MANUAL_REVIEW
+  IGNORED
+}

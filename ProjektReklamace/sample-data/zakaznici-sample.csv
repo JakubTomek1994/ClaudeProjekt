@@ -1,0 +1,5 @@
+email,jmeno,prijmeni,telefon,ulice,mesto,psc,ico,dic,firma_je_plnce_dph
+jan.novak@example.cz,Jan,Novák,+420 777 123 456,Hlavní 1,Praha,110 00,,,
+petra.dvorak@example.cz,Petra,Dvořáková,+420 605 987 654,Brněnská 25,Brno,602 00,,,
+firma.abc@example.cz,,,+420 222 333 444,Spálená 5,Praha,110 00,12345678,CZ12345678,1
+karel.vesely@example.cz,Karel,Veselý,+420 608 111 222,Náměstí 3,Olomouc,779 00,,,
